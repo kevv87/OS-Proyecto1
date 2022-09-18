@@ -1,2 +1,4 @@
 set(SOURCES helloWorld.c)
-add_library(Common ${SOURCES})
+set(HEADERS include/helloWorld.h)
+
+add_library(Common ${SOURCES} ${HEADERS})
