@@ -17,12 +17,21 @@ jobs:
       - name: Build Decoder
         run: |
           cd decoder
-          make
+          mkdir build
+          cd build
+          cmake ../
+          cmake --build .
       - name: Build Encoder
         run: |
           cd encoder
-          make
+          mkdir build
+          cd build
+          cmake ../
+          cmake --build .
       - name: Build Visualizer
         run: |
           cd visualizer
-          make
+          mkdir build
+          cd build
+          cmake ../
+          cmake --build .
