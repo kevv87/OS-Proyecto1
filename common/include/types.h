@@ -7,15 +7,16 @@ typedef struct Pixel {
 	bool dirtyBit;
 } Pixel_t;
 
+typedef struct Node Node_t;
 typedef struct Node{
-	Pixel_t pixel;
-	Node_t next;
-	Node_t prev;
+	Pixel_t* pixel;
+	Node_t* next;
+	Node_t* prev;
 	int index;	
 } Node_t;
 
 typedef struct ImageChunk{
 	int size;
-	Node_t head;
-	Node_t tail;
+	Node_t* head;
+	Node_t* tail;
 } ImageChunk_t;
