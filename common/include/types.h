@@ -11,7 +11,6 @@ typedef struct Node Node_t;
 typedef struct Node{
 	Pixel_t* pixel;
 	Node_t* next;
-	Node_t* prev;
 	int index;	
 } Node_t;
 

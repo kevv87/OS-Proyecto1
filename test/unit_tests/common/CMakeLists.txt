@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(Test)
+set(CMAKE_BUILD_TYPE Debug)
 
 # Adding the projects to test
 add_subdirectory("${PROJECT_SOURCE_DIR}/../../../common/" "${PROJECT_BINARY_DIR}/common")
