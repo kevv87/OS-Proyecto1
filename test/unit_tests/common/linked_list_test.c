@@ -46,7 +46,7 @@ static void create_list(void **state){
 
 static void test_add_first_item(void **state){
     Pixel_t newPixel = {
-        .valor = 80,
+        .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
@@ -54,21 +54,21 @@ static void test_add_first_item(void **state){
 
     append_item(imageChunk, &newPixel);
     assert_true(imageChunk->size == 1);
-    assert_true(imageChunk->head->pixel->valor == newPixel.valor);
+    assert_true(imageChunk->head->pixel->value == newPixel.value);
     assert_true(imageChunk->head == imageChunk->tail);
     assert_true(newPixel.index == 0);
 }
 
 static void test_add_item_at_end(void **state){
     Pixel_t firstPixel = {
-        .valor = 80,
+        .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
     };
     
     Pixel_t newPixel = {
-        .valor = 80,
+        .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
@@ -96,27 +96,27 @@ static void test_add_item_at_end(void **state){
 static void test_add_several_items(void **state){
 
     Pixel_t firstPixel = {
-        .valor = 80,
+        .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
     };
     
     Pixel_t secondPixel = {
-        .valor = 80,
+        .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
     };
     Pixel_t thirdPixel = {
-        .valor = 80,
+        .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
     };
     
     Pixel_t fourthPixel = {
-        .valor = 80,
+        .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
@@ -166,7 +166,7 @@ static void test_get_pixel_by_index(void **state){
 
 static void test_replace_first_pixel(void **state){
     Pixel_t newPixel = {
-        .valor = 13,
+        .value = 13,
         .index = -1,
         .metadata_id = 2,
         .dirtyBit = false
@@ -174,12 +174,12 @@ static void test_replace_first_pixel(void **state){
 
     replace_nth_pixel(imageChunk, &newPixel, 0);
 
-    assert_int_equal(imageChunk->head->pixel->valor, newPixel.valor);
+    assert_int_equal(imageChunk->head->pixel->value, newPixel.value);
 }
 
 static void test_replace_nth_pixel(void **state){
     Pixel_t newPixel = {
-        .valor = 13,
+        .value = 13,
         .index = -1,
         .metadata_id = 2,
         .dirtyBit = false
@@ -191,17 +191,17 @@ static void test_replace_nth_pixel(void **state){
     Pixel_t *replacedPixel = get_pixel_by_index(imageChunk, 4);
 
     // Value is replaced
-    assert_int_equal(replacedPixel->valor, newPixel.valor);
+    assert_int_equal(replacedPixel->value, newPixel.value);
     // Index is replaced
     assert_int_equal(newPixel.index, 4);
     // Next index left untouched
     assert_int_equal(nextPixel_old->index, nextPixel_new->index);
-    assert_int_equal(nextPixel_old->valor, nextPixel_new->valor);
+    assert_int_equal(nextPixel_old->value, nextPixel_new->value);
 }
 
 static void test_replace_last_pixel(void **state){
     Pixel_t newPixel = {
-        .valor = 13,
+        .value = 13,
         .index = -1,
         .metadata_id = 2,
         .dirtyBit = false
@@ -214,17 +214,17 @@ static void test_replace_last_pixel(void **state){
     Pixel_t *replacedPixel = get_pixel_by_index(imageChunk, list_length-1);
 
     // Value is replaced
-    assert_int_equal(replacedPixel->valor, newPixel.valor);
+    assert_int_equal(replacedPixel->value, newPixel.value);
     // Index is replaced
     assert_int_equal(newPixel.index, list_length-1);
     // Next index left untouched
     assert_int_equal(nextPixel_old->index, nextPixel_new->index);
-    assert_int_equal(nextPixel_old->valor, nextPixel_new->valor);
+    assert_int_equal(nextPixel_old->value, nextPixel_new->value);
 }
 
 static void test_get_pixel_by_metadata_id(void **state){
     Pixel_t newPixel = {
-        .valor = 13,
+        .value = 13,
         .index = -1,
         .metadata_id = 20,
         .dirtyBit = false
@@ -235,7 +235,7 @@ static void test_get_pixel_by_metadata_id(void **state){
     Pixel_t *foundPixel = get_pixel_by_metadata_id(imageChunk, 20);
 
     assert_true(foundPixel);
-    assert_int_equal(foundPixel->valor, newPixel.valor);
+    assert_int_equal(foundPixel->value, newPixel.value);
     assert_int_equal(foundPixel->index, newPixel.index);
 
 }

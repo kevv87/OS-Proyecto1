@@ -15,14 +15,14 @@ ImageChunk_t create_image_chunk(int node_quantity){
 int append_n_default_nodes(ImageChunk_t *chunk, int node_quantity){
     Pixel_t *pixel;
     for(int i=0; i < node_quantity; i++){
-		pixel = malloc(sizeof(Pixel_t));
+        pixel = malloc(sizeof(Pixel_t));
         *pixel = (Pixel_t) {
-            .valor = 80+i,
+            .value = 80+i,
             .index = -1,
             .metadata_id = i+3,
             .dirtyBit = false
         };
-		append_item(chunk, pixel);
+        append_item(chunk, pixel);
     }
     return 0;
 }
@@ -58,12 +58,12 @@ void append_item(ImageChunk_t *chunk, Pixel_t *pixelToAppend){
 int replace_nth_pixel(ImageChunk_t *imageChunk, Pixel_t *newPixel, int pos){
 
 	if(!imageChunk)
-		return NULL;
+		return -1;
 
 	Node_t *prevNode = navigate_to_prev_node(imageChunk, pos);
 
 	if(!prevNode)
-		return NULL;
+		return -1;
 
 	Node_t *newNode = malloc(sizeof(Node_t));
 	Node_t *tempNode = prevNode->next;
