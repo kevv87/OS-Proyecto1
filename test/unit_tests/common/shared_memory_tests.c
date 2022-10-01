@@ -52,7 +52,7 @@ void test_write_int(void ** state){
 
 void test_write_struct(void ** state){
     Pixel_t example_pixel = {
-        .valor = 80,
+        .value = 80,
         .index = 0,
         .metadata_id = 1,
         .dirtyBit = false
@@ -62,7 +62,7 @@ void test_write_struct(void ** state){
 
     Pixel_t *ptr = (Pixel_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
 
-    assert_int_equal(example_pixel.valor, ptr->valor);
+    assert_int_equal(example_pixel.value, ptr->value);
     assert_int_equal(example_pixel.dirtyBit, ptr->dirtyBit);
 }
 
@@ -85,7 +85,7 @@ void test_read_int(void ** state){
 
 void test_read_struct(void ** state){
     Pixel_t example_pixel = {
-        .valor = 80,
+        .value = 80,
         .index = 0,
         .metadata_id = 1,
         .dirtyBit = false
@@ -99,14 +99,14 @@ void test_read_struct(void ** state){
     read_shared_memory(read_ptr, shm_ptr, sizeof(Pixel_t));
 
     assert_true(read_ptr!= NULL);
-    assert_int_equal(read_ptr->valor, example_pixel.valor);
+    assert_int_equal(read_ptr->value, example_pixel.value);
     assert_int_equal(read_ptr->dirtyBit, example_pixel.dirtyBit);
 
     free(read_ptr);
     close_shared_pointer(shm_ptr, sizeof(int));
 }
 
-int main(void) {
+int shared_memory_tests_main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test_setup_teardown(test_no_error, setup_basic, teardown_test),
         cmocka_unit_test_setup_teardown(test_write_int, setup_basic, teardown_test),

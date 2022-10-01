@@ -239,18 +239,18 @@ static void test_get_pixel_by_metadata_id(void **state){
 
 }
 
-// int main(void) {
-//     const struct CMUnitTest tests[] = {
-//         cmocka_unit_test(create_list),
-//         cmocka_unit_test_setup_teardown(test_add_first_item, setup_empty_list, teardown),
-//         cmocka_unit_test_setup_teardown(test_add_item_at_end, setup_empty_list, teardown),
-//         cmocka_unit_test_setup_teardown(test_add_several_items, setup_empty_list, teardown),
-//         cmocka_unit_test(test_generate_fixed_length_chunk),
-//         cmocka_unit_test_setup_teardown(test_replace_first_pixel, setup_populated_list, teardown),
-//         cmocka_unit_test_setup_teardown(test_get_pixel_by_index, setup_populated_list, teardown),
-//         cmocka_unit_test_setup_teardown(test_replace_nth_pixel, setup_populated_list, teardown),
-//         // cmocka_unit_test_setup_teardown(test_replace_last_pixel, setup_populated_list, teardown),
-//         cmocka_unit_test_setup_teardown(test_get_pixel_by_metadata_id, setup_populated_list, teardown),
-//     };
-//     return cmocka_run_group_tests(tests, NULL, NULL);
-// }
+int linked_list_test_main(void) {
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test(create_list),
+        cmocka_unit_test_setup_teardown(test_add_first_item, setup_empty_list, teardown),
+        cmocka_unit_test_setup_teardown(test_add_item_at_end, setup_empty_list, teardown),
+        cmocka_unit_test_setup_teardown(test_add_several_items, setup_empty_list, teardown),
+        cmocka_unit_test(test_generate_fixed_length_chunk),
+        cmocka_unit_test_setup_teardown(test_replace_first_pixel, setup_populated_list, teardown),
+        cmocka_unit_test_setup_teardown(test_get_pixel_by_index, setup_populated_list, teardown),
+        cmocka_unit_test_setup_teardown(test_replace_nth_pixel, setup_populated_list, teardown),
+        // cmocka_unit_test_setup_teardown(test_replace_last_pixel, setup_populated_list, teardown),
+        cmocka_unit_test_setup_teardown(test_get_pixel_by_metadata_id, setup_populated_list, teardown),
+    };
+    return cmocka_run_group_tests(tests, NULL, NULL);
+}
