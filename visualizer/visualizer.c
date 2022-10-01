@@ -19,9 +19,19 @@ int main() {
 
     }
 
-    int *stat_ptr = mmap(NULL, sizeof(Stat_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    Stat_t *stat_ptr = mmap(NULL, sizeof(Stat_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
-    
+    if(stat_ptr == MAP_FAILED) {
+
+        munmap(stat_ptr, sizeof(Stat_t));
+
+        unlink(SM_STATS);
+
+        close(fd);   
+
+        return 0;
+
+    }
 
 
 

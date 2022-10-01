@@ -1,3 +1,5 @@
+#include <semaphore.h>
+
 typedef struct Pixel {
     int value;
     int index;
@@ -20,4 +22,5 @@ typedef struct Stat {
     int total_kernel_time;
     int total_pixels_175;
     int total_instances;
+    sem_t semaphore_visualizer
 } Stat_t;

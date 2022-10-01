@@ -72,9 +72,13 @@ int main() {
 
     scanf("%d", &num);
 
-    munmap(ptr, N * sizeof(int));
 
-    printf("\n");
+
+
+
+    
+
+    munmap(ptr, N * sizeof(int));
 
     unlink(NAME);
 
