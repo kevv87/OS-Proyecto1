@@ -8,8 +8,8 @@ project(Encoder)
 # Es necesario que en esta carpeta tambien haya un CMakeLists
 add_subdirectory("${PROJECT_SOURCE_DIR}/../common/" "${PROJECT_BINARY_DIR}/common")
 
-# Setting sources files for decoder
-set(SOURCES init.c)
+# Setting sources files for encoder
+set(SOURCES encoder.c)
 
 # Adding sources al executable
 # Tambien aqui se crea el target, con el mismo nombre del project name
@@ -17,7 +17,7 @@ add_executable( ${PROJECT_NAME} ${SOURCES} )
 
 # Aqui linkeamos el target al nombre de una libreria
 # Es necesario que la libreria que estamos usando tambien tenga su CMakeLists
-target_link_libraries(${PROJECT_NAME} PUBLIC Common)
+target_link_libraries(${PROJECT_NAME} PUBLIC Common m)
 
 # Modificamos el include directory para que tenga al root
 target_include_directories(${PROJECT_NAME} PUBLIC "../")
