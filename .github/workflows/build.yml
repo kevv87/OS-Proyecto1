@@ -35,3 +35,18 @@ jobs:
           cd build
           cmake ../
           cmake --build .
+  test:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+      - name: Test Common
+        run: |
+          cd test/unit_tests/common
+          mkdir build
+          cd build
+          cmake ..
+          make
+          ./Test
