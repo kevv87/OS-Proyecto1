@@ -6,7 +6,7 @@ set(CMAKE_BUILD_TYPE Debug)
 # Adding the projects to test
 add_subdirectory("${PROJECT_SOURCE_DIR}/../../../common/" "${PROJECT_BINARY_DIR}/common")
 
-set(SOURCES linked_list_test.c)
+set(SOURCES linked_list_test.c shared_memory_tests.c)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
