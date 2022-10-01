@@ -17,7 +17,7 @@ typedef struct Node {
 
 typedef struct Stat {
     int total_used_memory;
-    double total_semaphore_wait;
+    double total_semaphore_waited_time;
     int total_data_transfered;
     double total_kernel_time;
     int total_pixels_175;

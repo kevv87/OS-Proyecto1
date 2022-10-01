@@ -1,10 +1,12 @@
 #include <semaphore.h>
 #include <time.h>
 
-#include <structs.h>
-#include <constants.h>
+#include "lib/structs.h"
+#include "lib/constants.h"
 
-void sem_down(Stat_t *stat_ptr, sem_t *semaphore) {
+#include <stdio.h>
+
+void sem_down(Stat_t *stat_ptr, sem_t semaphore) {
 
     clock_t sem_start;
     clock_t sem_end;
@@ -15,11 +17,11 @@ void sem_down(Stat_t *stat_ptr, sem_t *semaphore) {
 
     sem_end = clock();
 
-    stat_ptr -> total_semaphore_wait += ((double)(sem_end - sem_start)) / CLOCKS_PER_SECOND;
+    stat_ptr -> total_semaphore_waited_time += ((double)(sem_end - sem_start)) / CLOCKS_PER_SEC;
 
 }
 
-void write(Stat_t *stat_ptr, void *sm_linked_list, void *value) {
+void write(Stat_t *stat_ptr, void *shared_memory, void *value) {
 
     stat_ptr -> total_data_transfered ++;
 
@@ -32,7 +34,7 @@ void write(Stat_t *stat_ptr, void *sm_linked_list, void *value) {
 
     kernel_end = clock();
 
-    stat_ptr -> total_kernel_time += ((double)(kernel_end - kernel_start)) / CLOCKS_PER_SECOND;
+    stat_ptr -> total_kernel_time += ((double)(kernel_end - kernel_start)) / CLOCKS_PER_SEC;
 
 }
 
@@ -44,7 +46,7 @@ void write_pixel(Stat_t *stat_ptr, void *sm_linked_list, Pixel_t *pixel) {
 
     }
 
-    write(stat_ptr, sm_linked_list, pixel) {
+    write(stat_ptr, sm_linked_list, pixel);
 
 }
 
@@ -59,8 +61,15 @@ void read(Stat_t *stat_ptr, void *sm_linked_list) {
 
     kernel_end = clock();
 
-    stat_ptr -> total_kernel_time += ((double)(kernel_end - kernel_start)) / CLOCKS_PER_SECOND;
+    stat_ptr -> total_kernel_time += ((double)(kernel_end - kernel_start)) / CLOCKS_PER_SEC;
 
+}
+
+int main() {
+
+    printf("Hola");
+
+    return 0;
 }
 
 
@@ -76,20 +85,3 @@ void read(Stat_t *stat_ptr, void *sm_linked_list) {
 
 
 
-
-
-// read or write here
-    kernel_start = clock();
-
-    if(read_flag == 1 && write_flag = 0) {
-
-        
-
-
-    } else {
-
-
-
-
-
-    }

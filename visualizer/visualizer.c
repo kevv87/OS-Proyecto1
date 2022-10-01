@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#include <structs.h>
-#include <constants.h>
+#include "lib/structs.h"
+#include "lib/constants.h"
 
 int main() {
 
@@ -33,7 +33,44 @@ int main() {
 
     }
 
+    sem_wait(&(stat_ptr -> semaphore_visualizer));
 
+    /*
+    stat_ptr -> total_used_memory = 1000;
+    stat_ptr -> total_semaphore_waited_time = 10.04;
+    stat_ptr -> total_data_transfered = 5000;
+    stat_ptr -> total_kernel_time = 25.07;
+    stat_ptr -> total_pixels_175 = 2500;
+    */
+
+
+
+
+
+    printf("-----------------------------------------------------------\n");
+    printf("           Statistics              |       Values           \n");
+    printf("-----------------------------------------------------------\n");
+    printf("   Total used memory               |       %d\n", stat_ptr -> total_used_memory);
+    printf("   Total semaphore waited time     |       %f\n", stat_ptr -> total_semaphore_waited_time);
+    printf("   Total data transfered           |       %d\n", stat_ptr -> total_data_transfered);
+    printf("   Total kernel time               |       %f\n", stat_ptr -> total_kernel_time);
+    printf("   Total pixels greater than 175   |       %d\n", stat_ptr -> total_pixels_175);
+    printf("------------------------------------------------------------\n");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //sem_post(&(stat_ptr -> semaphore_visualizer));
 
 
 
