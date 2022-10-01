@@ -49,12 +49,12 @@ int close_shared_memory(char *shm_name){
 	return errno;
 }
 
-int *write_shared_memory(int shared_fd, void *valueToWrite, size_t size){
-	void *ptr = obtain_shared_pointer(size, shared_fd);
-	if(ptr == NULL)
-		return NULL;
-	
-	*ptr = *valueToWrite;
+void *write_shared_memory(void *dst_shm_ptr, void *src_ptr, size_t size){
+    memcpy(dst_shm_ptr, src_ptr, size);
+    return dst_shm_ptr;
+}
 
-	return ptr;
+void *read_shared_memory(void *dst_ptr, void *src_shm_ptr, size_t size){
+    memcpy(dst_ptr, src_shm_ptr, size);
+    return dst_ptr;
 }
