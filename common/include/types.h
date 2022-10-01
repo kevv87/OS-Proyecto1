@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
 typedef struct Pixel {
-	int valor;
+	int value;
 	int index;
 	int metadata_id;
 	bool dirtyBit;
