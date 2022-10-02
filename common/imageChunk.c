@@ -84,6 +84,8 @@ int replace_nth_pixel(ImageChunk_t *imageChunk, Node_t *newPixel, int pos){
 		imageChunk->head = newNode;
 		imageChunk->head->index = 0;
 	}
+
+    free(tempNode);
 	
 	return 0;
 }
