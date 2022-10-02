@@ -49,5 +49,5 @@ jobs:
           cd build
           cmake ..
           make
-          ./linked_list_test
+          ./linked_list_on_shared_memory_test
           ./shared_memory_tests

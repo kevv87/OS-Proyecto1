@@ -9,11 +9,11 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/../../../cmocka" "${PROJECT_BINARY_DIR}/
 
 set(SOURCES linked_list_test.c shared_memory_tests.c)
 
-add_executable(linked_list_test linked_list_test.c)
 add_executable(shared_memory_tests shared_memory_tests.c)
+add_executable(linked_list_on_shared_memory_test linked_list_on_shared_memory_test.c)
 
-target_link_libraries(linked_list_test PUBLIC Common cmocka)
 target_link_libraries(shared_memory_tests PUBLIC Common cmocka)
+target_link_libraries(linked_list_on_shared_memory_test PUBLIC Common cmocka)
 
-target_include_directories(linked_list_test PUBLIC "${PROJECT_SOURCE_DIR}/../../../")
 target_include_directories(shared_memory_tests PUBLIC "${PROJECT_SOURCE_DIR}/../../../")
+target_include_directories(linked_list_on_shared_memory_test PUBLIC "${PROJECT_SOURCE_DIR}/../../../")

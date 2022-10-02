@@ -1,44 +1,56 @@
 #include "include/imageChunk.h"
 
-ImageChunk_t create_image_chunk(int node_quantity){
+ImageChunk_t create_image_chunk(void *ptr_to_shm_start, int node_quantity){
 	ImageChunk_t chunk = (ImageChunk_t) {
 		.size = 0,
 		.head = NULL,
 		.tail = NULL
 	};
 
-	append_n_default_nodes(&chunk, node_quantity);
+    write_shared_memory(ptr_to_shm_start, &chunk, sizeof(ImageChunk_t));
+	append_n_default_nodes(ptr_to_shm_start, node_quantity);
 
 	return chunk;
 }
 
-int append_n_default_nodes(ImageChunk_t *chunk, int node_quantity){
-    Node_t *pixel;
+int append_n_default_nodes(void * ptr_to_shm_start, int node_quantity){
     for(int i=0; i < node_quantity; i++){
-        pixel = malloc(sizeof(Node_t));
-        *pixel = (Node_t) {
+        Node_t pixel = (Node_t) {
             .next = NULL,
             .value = 80+i,
             .index = -1,
             .metadata_id = i+3,
             .dirtyBit = false
         };
-        append_item(chunk, pixel);
+        append_item(ptr_to_shm_start, &pixel);
     }
     return 0;
 }
 
-void append_item(ImageChunk_t *chunk, Node_t *pixelToAppend){
-	Node_t* newNode = pixelToAppend;
-    newNode->index = chunk->size;
+Node_t * determine_next_available_shm_ptr(void *ptr_to_shm_start, ImageChunk_t *chunk){
+    void * avail_ptr = ptr_to_shm_start;
+    avail_ptr += sizeof(ImageChunk_t) + chunk->size * sizeof(Node_t);
+    return (Node_t *) avail_ptr;
+}
 
-	Node_t* tempNode;
+void append_item(void *ptr_to_shm_start, Node_t *nodeToAppend){
+    
+    ImageChunk_t *chunk = (ImageChunk_t *) ptr_to_shm_start;
+
+    Node_t* newNode = 
+        determine_next_available_shm_ptr(ptr_to_shm_start, chunk);
+    
+    nodeToAppend->index = chunk->size;
+
+    write_shared_memory(newNode, nodeToAppend, sizeof(Node_t));
 
 	if(chunk->size == 0){
 		chunk->head = newNode;
 		chunk->tail = newNode;
 		newNode->next = newNode;
 	}else{
+        Node_t* tempNode;
+
 		tempNode = chunk->tail;
 		chunk->tail = newNode;
 		tempNode->next = chunk->tail;
@@ -56,13 +68,15 @@ int replace_nth_pixel(ImageChunk_t *imageChunk, Node_t *newPixel, int pos){
 		return -1;
 
 	Node_t *prevNode = navigate_to_prev_node(imageChunk, pos);
+    Node_t *tempNode = malloc(sizeof(Node_t));
 
 	if(!prevNode)
 		return -1;
 
-	Node_t *newNode = newPixel;
-	Node_t *tempNode = prevNode->next;
-	prevNode->next =  newNode;
+    tempNode = read_shared_memory(tempNode, prevNode->next, sizeof(Node_t));
+	Node_t *newNode = 
+        write_shared_memory(prevNode->next, newPixel, sizeof(Node_t));
+ 
 	newNode->next = tempNode->next;
     newNode->index = tempNode->index;
 
@@ -70,8 +84,9 @@ int replace_nth_pixel(ImageChunk_t *imageChunk, Node_t *newPixel, int pos){
 		imageChunk->head = newNode;
 		imageChunk->head->index = 0;
 	}
+
+    free(tempNode);
 	
-	free(tempNode);
 	return 0;
 }
 

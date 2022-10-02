@@ -3,10 +3,10 @@
 int obtain_shared_fd(char *name, bool createIfNull, int len){
 	int shared_fd;
 
-	shared_fd = shm_open("test", O_RDWR, S_IRUSR | S_IWUSR);
+	shared_fd = shm_open(name, O_RDWR, S_IRUSR | S_IWUSR);
 
 	if (shared_fd == -1){
-		shared_fd = shm_open("test", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+		shared_fd = shm_open(name, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		if(shared_fd == -1 && createIfNull){
 			perror("shm_open failed");
 			return -1;
@@ -50,11 +50,9 @@ int close_shared_memory(char *shm_name){
 }
 
 void *write_shared_memory(void *dst_shm_ptr, void *src_ptr, size_t size){
-    memcpy(dst_shm_ptr, src_ptr, size);
-    return dst_shm_ptr;
+    return memmove(dst_shm_ptr, src_ptr, size);
 }
 
 void *read_shared_memory(void *dst_ptr, void *src_shm_ptr, size_t size){
-    memcpy(dst_ptr, src_shm_ptr, size);
-    return dst_ptr;
+    return memmove(dst_ptr, src_shm_ptr, size);
 }

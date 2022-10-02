@@ -7,40 +7,85 @@
 #include "cmocka/include/cmocka.h"
 
 #include "common/include/imageChunk.h"
+#include "common/include/shared_memory.h"
+
+#define SHM_1_NAME "/test1"
 
 ImageChunk_t *imageChunk;
+int shm_size;
+int shm_fd;
+void * ptr_to_shm_start;
 
 // -----> Auxiliary functions
 
 int setup_empty_list(void ** state){
-    imageChunk = malloc(sizeof(ImageChunk_t));
+    shm_size = sizeof(ImageChunk_t);
+    shm_fd = obtain_shared_fd(SHM_1_NAME, true, shm_size);
 
-    ImageChunk_t imageChunk_obj = create_image_chunk(0);
-    *imageChunk = imageChunk_obj;
+    if(shm_fd == -1){
+        perror("obtain_shared_fd failed");
+        return -1;
+    }
+
+    ptr_to_shm_start = obtain_shared_pointer(shm_size, shm_fd);
+    if(ptr_to_shm_start == NULL){
+        perror("obtain_shared_pointer failed");
+        return -1;
+    }
+
+    // Execute
+    create_image_chunk(ptr_to_shm_start, 0);
+    imageChunk = (ImageChunk_t *) ptr_to_shm_start;
 
     return 0;
 }
 
 int setup_populated_list(void ** state){
-    imageChunk = malloc(sizeof(ImageChunk_t));
+    int node_quantity = 10;
+    shm_size = sizeof(ImageChunk_t) + node_quantity * sizeof(Node_t);
+    shm_fd = obtain_shared_fd(SHM_1_NAME, true, shm_size);
 
-    ImageChunk_t imageChunk_obj = create_image_chunk(10);
-    *imageChunk = imageChunk_obj;
+    ptr_to_shm_start = obtain_shared_pointer(shm_size, shm_fd);
+
+    // Execute
+    create_image_chunk(ptr_to_shm_start, node_quantity);
 
     return 0;
 }
 
 int teardown(void **state){
-    free(imageChunk);
+    close_shared_pointer(ptr_to_shm_start, shm_size);
+    close_shared_memory(SHM_1_NAME);
     return 0;
+}
+
+Node_t * get_shm_ptr_by_node_index(void *shm_ptr_to_start, int index){
+    return ptr_to_shm_start     + 
+        sizeof(ImageChunk_t)    +
+        index * sizeof(Node_t);
 }
 
 // ------> Tests 
 static void create_list(void **state){
-    ImageChunk_t imageChunk = create_image_chunk(0);
+    // Setup
+    int shm_size = sizeof(ImageChunk_t);
+    int shm_fd = obtain_shared_fd(SHM_1_NAME, true, shm_size);
+    assert_int_not_equal(shm_fd, -1);
 
-    assert_non_null(&imageChunk);
-    assert_true(imageChunk.size==0);
+    void * ptr_to_shm_start = obtain_shared_pointer(shm_size, shm_fd);
+    assert_true(ptr_to_shm_start != NULL);
+
+    // Execute
+    create_image_chunk(ptr_to_shm_start, 0);
+    ImageChunk_t *imageChunk = (ImageChunk_t *) ptr_to_shm_start;
+
+    // Assert
+    assert_true(ptr_to_shm_start!=NULL);
+    assert_int_equal(imageChunk->size, 0);
+
+    // Close
+    close_shared_pointer(ptr_to_shm_start, shm_size);
+    close_shared_memory(SHM_1_NAME);
 }
 
 static void test_add_first_item(void **state){
@@ -52,11 +97,23 @@ static void test_add_first_item(void **state){
         .dirtyBit = false
     };
 
-    append_item(imageChunk, &newPixel);
+    append_item(ptr_to_shm_start , &newPixel);
+
+    // Normal assertions
     assert_true(imageChunk->size == 1);
     assert_true(imageChunk->head->value == newPixel.value);
     assert_true(imageChunk->head == imageChunk->tail);
     assert_true(newPixel.index == 0);
+
+    // Shared memory assertions
+    Node_t * shm_node = 
+        ptr_to_shm_start + 
+        sizeof(ImageChunk_t);
+    
+    assert_true(shm_node->value == newPixel.value);
+    assert_true(shm_node->dirtyBit == newPixel.dirtyBit);
+
+
 }
 
 static void test_add_item_at_end(void **state){
@@ -77,22 +134,36 @@ static void test_add_item_at_end(void **state){
     };
 
     // Execution 
-    append_item(imageChunk, &firstPixel);
-    append_item(imageChunk, &newPixel);
+    append_item(ptr_to_shm_start, &firstPixel);
+    append_item(ptr_to_shm_start, &newPixel);
+
+    // Shared memory addresses
+    Node_t * firstPixel_ptr = 
+        get_shm_ptr_by_node_index(ptr_to_shm_start , 0);
+    
+    Node_t * newPixel_ptr =
+        get_shm_ptr_by_node_index(ptr_to_shm_start , 1);
+    
+    imageChunk = (ImageChunk_t *) ptr_to_shm_start;
     
     // List validations
     assert_true(imageChunk->size == 2);
-    assert_true(imageChunk->head == &firstPixel);
-    assert_true(imageChunk->tail == &newPixel);
+    assert_true(imageChunk->head == firstPixel_ptr);
+    assert_true(imageChunk->tail == newPixel_ptr);
     
     // Individual pixels validations
     assert_true(firstPixel.index == 0);
     assert_true(newPixel.index == 1);
 
     // Node validations
-    assert_true(imageChunk->head->next == &newPixel);
+    assert_true(imageChunk->head->next == newPixel_ptr);
         // Circularity validations
     assert_true(imageChunk->tail->next == imageChunk->head);
+
+    // Shared memory assertions
+    assert_true(newPixel_ptr->value == newPixel.value);
+    assert_true(newPixel_ptr->dirtyBit == newPixel.dirtyBit);
+
 }
 
 static void test_add_several_items(void **state){
@@ -130,15 +201,26 @@ static void test_add_several_items(void **state){
     };
 
     // Execution 
-    append_item(imageChunk, &firstPixel);
-    append_item(imageChunk, &secondPixel);
-    append_item(imageChunk, &thirdPixel);
-    append_item(imageChunk, &fourthPixel);
+    append_item(ptr_to_shm_start, &firstPixel);
+    append_item(ptr_to_shm_start, &secondPixel);
+    append_item(ptr_to_shm_start, &thirdPixel);
+    append_item(ptr_to_shm_start, &fourthPixel);
+
+    // Shared memory addresses
+    imageChunk = (ImageChunk_t *) ptr_to_shm_start;
+    Node_t * firstPixel_ptr = 
+        get_shm_ptr_by_node_index(ptr_to_shm_start , 0);
+    Node_t * secondPixel_ptr = 
+        get_shm_ptr_by_node_index(ptr_to_shm_start , 1);
+    Node_t * thirdPixel_ptr = 
+        get_shm_ptr_by_node_index(ptr_to_shm_start , 2);
+    Node_t * fourthPixel_ptr = 
+        get_shm_ptr_by_node_index(ptr_to_shm_start , 3);
     
     // List validations
     assert_true(imageChunk->size == 4);
-    assert_true(imageChunk->head == &firstPixel);
-    assert_true(imageChunk->tail == &fourthPixel);
+    assert_true(imageChunk->head == firstPixel_ptr);
+    assert_true(imageChunk->tail == fourthPixel_ptr);
     
     // Individual pixels validations
     assert_true(firstPixel.index == 0);
@@ -147,21 +229,34 @@ static void test_add_several_items(void **state){
     assert_true(fourthPixel.index == 3);
 
     // Node validations
-    assert_true(imageChunk->head->next == &secondPixel);
+    assert_true(imageChunk->head->next == secondPixel_ptr);
         // Circularity validations
     assert_true(imageChunk->tail->next == imageChunk->head);
 
 }
 
 static void test_generate_fixed_length_chunk(void **state){
+    // Setup
     int node_quantity = 10;
-    ImageChunk_t imageChunk = create_image_chunk(node_quantity);
+    int shm_size = sizeof(ImageChunk_t) + node_quantity * sizeof(Node_t);
+    int shm_fd = obtain_shared_fd(SHM_1_NAME, true, shm_size);
+    assert_int_not_equal(shm_fd, -1);
 
-    assert_int_equal(imageChunk.size, node_quantity);
+    void * ptr_to_shm_start = obtain_shared_pointer(shm_size, shm_fd);
+    assert_true(ptr_to_shm_start != NULL);
 
+    // Execute
+    create_image_chunk(ptr_to_shm_start, node_quantity);
+
+    ImageChunk_t *imageChunk = (ImageChunk_t *) ptr_to_shm_start;
+
+    assert_int_equal(imageChunk->size, node_quantity);
 }
 
 static void test_get_pixel_by_index(void **state){
+
+    ImageChunk_t *imageChunk = (ImageChunk_t *) ptr_to_shm_start;
+
     Node_t *first_pixel = get_pixel_by_index(imageChunk, 0);
     Node_t *nth_pixel = get_pixel_by_index(imageChunk, 3);
     Node_t *last_pixel = get_pixel_by_index(imageChunk, imageChunk->size-1);
@@ -180,6 +275,8 @@ static void test_replace_first_pixel(void **state){
         .dirtyBit = false
     };
 
+    ImageChunk_t *imageChunk = (ImageChunk_t *) ptr_to_shm_start;
+
     replace_nth_pixel(imageChunk, &newPixel, 0);
 
     assert_int_equal(imageChunk->head->value, newPixel.value);
@@ -192,6 +289,8 @@ static void test_replace_nth_pixel(void **state){
         .metadata_id = 2,
         .dirtyBit = false
     };
+
+    imageChunk = (ImageChunk_t *) ptr_to_shm_start;
     
     Node_t *nextPixel_old = get_pixel_by_index(imageChunk, 5);
     replace_nth_pixel(imageChunk, &newPixel, 4);
@@ -201,30 +300,9 @@ static void test_replace_nth_pixel(void **state){
     // Value is replaced
     assert_int_equal(replacedPixel->value, newPixel.value);
     // Index is replaced
-    assert_int_equal(newPixel.index, 4);
-    // Next index left untouched
-    assert_int_equal(nextPixel_old->index, nextPixel_new->index);
-    assert_int_equal(nextPixel_old->value, nextPixel_new->value);
-}
-
-static void test_replace_last_pixel(void **state){
-    Node_t newPixel = {
-        .value = 13,
-        .index = -1,
-        .metadata_id = 2,
-        .dirtyBit = false
-    };
-    int list_length = imageChunk->size;
-
-    Node_t *nextPixel_old = get_pixel_by_index(imageChunk, 0);
-    replace_nth_pixel(imageChunk, &newPixel, list_length-1);
-    Node_t *nextPixel_new = get_pixel_by_index(imageChunk,0);
-    Node_t *replacedPixel = get_pixel_by_index(imageChunk, list_length-1);
-
-    // Value is replaced
-    assert_int_equal(replacedPixel->value, newPixel.value);
-    // Index is replaced
-    assert_int_equal(newPixel.index, list_length-1);
+    Node_t * newPixel_ptr = 
+        get_shm_ptr_by_node_index(ptr_to_shm_start, 4);
+    assert_int_equal(newPixel_ptr->index, 4);
     // Next index left untouched
     assert_int_equal(nextPixel_old->index, nextPixel_new->index);
     assert_int_equal(nextPixel_old->value, nextPixel_new->value);
@@ -242,10 +320,11 @@ static void test_get_pixel_by_metadata_id(void **state){
 
     Node_t *foundPixel = get_pixel_by_metadata_id(imageChunk, 20);
 
-    assert_true(foundPixel);
-    assert_int_equal(foundPixel->value, newPixel.value);
-    assert_int_equal(foundPixel->index, newPixel.index);
+    Node_t *newPixel_ptr = get_shm_ptr_by_node_index(ptr_to_shm_start, 5);
 
+    assert_true(foundPixel);
+    assert_int_equal(foundPixel->value, newPixel_ptr->value);
+    assert_int_equal(foundPixel->index, newPixel_ptr->index);
 }
 
 int main(void) {
@@ -254,9 +333,9 @@ int main(void) {
         cmocka_unit_test_setup_teardown(test_add_first_item, setup_empty_list, teardown),
         cmocka_unit_test_setup_teardown(test_add_item_at_end, setup_empty_list, teardown),
         cmocka_unit_test_setup_teardown(test_add_several_items, setup_empty_list, teardown),
-        cmocka_unit_test(test_generate_fixed_length_chunk),
-        cmocka_unit_test_setup_teardown(test_replace_first_pixel, setup_populated_list, teardown),
+        cmocka_unit_test_setup_teardown(test_generate_fixed_length_chunk, NULL, teardown),
         cmocka_unit_test_setup_teardown(test_get_pixel_by_index, setup_populated_list, teardown),
+        cmocka_unit_test_setup_teardown(test_replace_first_pixel, setup_populated_list, teardown),
         cmocka_unit_test_setup_teardown(test_replace_nth_pixel, setup_populated_list, teardown),
         cmocka_unit_test_setup_teardown(test_get_pixel_by_metadata_id, setup_populated_list, teardown),
     };
