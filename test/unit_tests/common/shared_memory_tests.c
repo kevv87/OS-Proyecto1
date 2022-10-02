@@ -106,7 +106,7 @@ void test_read_struct(void ** state){
     close_shared_pointer(shm_ptr, sizeof(int));
 }
 
-int shared_memory_tests_main(void) {
+int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test_setup_teardown(test_no_error, setup_basic, teardown_test),
         cmocka_unit_test_setup_teardown(test_write_int, setup_basic, teardown_test),

@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 #include <stdbool.h>
 
 typedef struct Pixel {
@@ -19,3 +22,5 @@ typedef struct ImageChunk{
 	Node_t* head;
 	Node_t* tail;
 } ImageChunk_t;
+
+#endif // TYPES_H

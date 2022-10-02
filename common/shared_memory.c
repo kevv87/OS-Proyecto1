@@ -3,10 +3,10 @@
 int obtain_shared_fd(char *name, bool createIfNull, int len){
 	int shared_fd;
 
-	shared_fd = shm_open("test", O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
+	shared_fd = shm_open("test", O_RDWR, S_IRUSR | S_IWUSR);
 
 	if (shared_fd == -1){
-		shared_fd = shm_open("test", O_RDWR | O_EXCL | O_CREAT, S_IRUSR | S_IWUSR);
+		shared_fd = shm_open("test", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		if(shared_fd == -1 && createIfNull){
 			perror("shm_open failed");
 			return -1;

@@ -239,7 +239,7 @@ static void test_get_pixel_by_metadata_id(void **state){
 
 }
 
-int linked_list_test_main(void) {
+int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(create_list),
         cmocka_unit_test_setup_teardown(test_add_first_item, setup_empty_list, teardown),
