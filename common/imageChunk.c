@@ -1,18 +1,6 @@
 #include "include/imageChunk.h"
 
-ImageChunk_t create_image_chunk(int node_quantity){
-	ImageChunk_t chunk = (ImageChunk_t) {
-		.size = 0,
-		.head = NULL,
-		.tail = NULL
-	};
-
-	append_n_default_nodes(&chunk, node_quantity);
-
-	return chunk;
-}
-
-ImageChunk_t shm_create_image_chunk(void *ptr_to_shm_start, int node_quantity){
+ImageChunk_t create_image_chunk(void *ptr_to_shm_start, int node_quantity){
 	ImageChunk_t chunk = (ImageChunk_t) {
 		.size = 0,
 		.head = NULL,
@@ -20,12 +8,12 @@ ImageChunk_t shm_create_image_chunk(void *ptr_to_shm_start, int node_quantity){
 	};
 
     write_shared_memory(ptr_to_shm_start, &chunk, sizeof(ImageChunk_t));
-	shm_append_n_default_nodes(ptr_to_shm_start, node_quantity);
+	append_n_default_nodes(ptr_to_shm_start, node_quantity);
 
 	return chunk;
 }
 
-int shm_append_n_default_nodes(void * ptr_to_shm_start, int node_quantity){
+int append_n_default_nodes(void * ptr_to_shm_start, int node_quantity){
     for(int i=0; i < node_quantity; i++){
         Node_t pixel = (Node_t) {
             .next = NULL,
@@ -34,23 +22,7 @@ int shm_append_n_default_nodes(void * ptr_to_shm_start, int node_quantity){
             .metadata_id = i+3,
             .dirtyBit = false
         };
-        shm_append_item(ptr_to_shm_start, &pixel);
-    }
-    return 0;
-}
-
-int append_n_default_nodes(ImageChunk_t *chunk, int node_quantity){
-    Node_t *pixel;
-    for(int i=0; i < node_quantity; i++){
-        pixel = malloc(sizeof(Node_t));
-        *pixel = (Node_t) {
-            .next = NULL,
-            .value = 80+i,
-            .index = -1,
-            .metadata_id = i+3,
-            .dirtyBit = false
-        };
-        append_item(chunk, pixel);
+        append_item(ptr_to_shm_start, &pixel);
     }
     return 0;
 }
@@ -61,7 +33,7 @@ Node_t * determine_next_available_shm_ptr(void *ptr_to_shm_start, ImageChunk_t *
     return (Node_t *) avail_ptr;
 }
 
-void shm_append_item(void *ptr_to_shm_start, Node_t *nodeToAppend){
+void append_item(void *ptr_to_shm_start, Node_t *nodeToAppend){
     
     ImageChunk_t *chunk = (ImageChunk_t *) ptr_to_shm_start;
 
@@ -90,41 +62,21 @@ void shm_append_item(void *ptr_to_shm_start, Node_t *nodeToAppend){
 	return;
 }
 
-void append_item(ImageChunk_t *chunk, Node_t *pixelToAppend){
-	Node_t* newNode = pixelToAppend;
-    newNode->index = chunk->size;
-
-	Node_t* tempNode;
-
-	if(chunk->size == 0){
-		chunk->head = newNode;
-		chunk->tail = newNode;
-		newNode->next = newNode;
-	}else{
-		tempNode = chunk->tail;
-		chunk->tail = newNode;
-		tempNode->next = chunk->tail;
-		newNode->next = chunk->head;
-	}
-
-	chunk->size++;
-
-	return;
-}
-
 int replace_nth_pixel(ImageChunk_t *imageChunk, Node_t *newPixel, int pos){
 
 	if(!imageChunk)
 		return -1;
 
 	Node_t *prevNode = navigate_to_prev_node(imageChunk, pos);
+    Node_t *tempNode = malloc(sizeof(Node_t));
 
 	if(!prevNode)
 		return -1;
 
-	Node_t *newNode = newPixel;
-	Node_t *tempNode = prevNode->next;
-	prevNode->next =  newNode;
+    tempNode = read_shared_memory(tempNode, prevNode->next, sizeof(Node_t));
+	Node_t *newNode = 
+        write_shared_memory(prevNode->next, newPixel, sizeof(Node_t));
+ 
 	newNode->next = tempNode->next;
     newNode->index = tempNode->index;
 
@@ -133,7 +85,6 @@ int replace_nth_pixel(ImageChunk_t *imageChunk, Node_t *newPixel, int pos){
 		imageChunk->head->index = 0;
 	}
 	
-	free(tempNode);
 	return 0;
 }
 

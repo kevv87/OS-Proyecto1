@@ -50,11 +50,9 @@ int close_shared_memory(char *shm_name){
 }
 
 void *write_shared_memory(void *dst_shm_ptr, void *src_ptr, size_t size){
-    memmove(dst_shm_ptr, src_ptr, size);
-    return dst_shm_ptr;
+    return memmove(dst_shm_ptr, src_ptr, size);
 }
 
 void *read_shared_memory(void *dst_ptr, void *src_shm_ptr, size_t size){
-    memmove(dst_ptr, src_shm_ptr, size);
-    return dst_ptr;
+    return memmove(dst_ptr, src_shm_ptr, size);
 }
