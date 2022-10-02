@@ -4,7 +4,6 @@
 #include <setjmp.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
 #include "cmocka/include/cmocka.h"
 
 #include "common/include/imageChunk.h"
@@ -45,7 +44,8 @@ static void create_list(void **state){
 }
 
 static void test_add_first_item(void **state){
-    Pixel_t newPixel = {
+    Node_t newPixel = {
+        .next = NULL,
         .value = 80,
         .index = -1,
         .metadata_id = 0,
@@ -54,20 +54,22 @@ static void test_add_first_item(void **state){
 
     append_item(imageChunk, &newPixel);
     assert_true(imageChunk->size == 1);
-    assert_true(imageChunk->head->pixel->value == newPixel.value);
+    assert_true(imageChunk->head->value == newPixel.value);
     assert_true(imageChunk->head == imageChunk->tail);
     assert_true(newPixel.index == 0);
 }
 
 static void test_add_item_at_end(void **state){
-    Pixel_t firstPixel = {
+    Node_t firstPixel = {
+        .next = NULL,
         .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
     };
     
-    Pixel_t newPixel = {
+    Node_t newPixel = {
+        .next = NULL,
         .value = 80,
         .index = -1,
         .metadata_id = 0,
@@ -80,42 +82,47 @@ static void test_add_item_at_end(void **state){
     
     // List validations
     assert_true(imageChunk->size == 2);
-    assert_true(imageChunk->head->pixel == &firstPixel);
-    assert_true(imageChunk->tail->pixel == &newPixel);
+    assert_true(imageChunk->head == &firstPixel);
+    assert_true(imageChunk->tail == &newPixel);
     
     // Individual pixels validations
     assert_true(firstPixel.index == 0);
     assert_true(newPixel.index == 1);
 
     // Node validations
-    assert_true(imageChunk->head->next->pixel == &newPixel);
+    assert_true(imageChunk->head->next == &newPixel);
         // Circularity validations
     assert_true(imageChunk->tail->next == imageChunk->head);
 }
 
 static void test_add_several_items(void **state){
 
-    Pixel_t firstPixel = {
+    Node_t firstPixel = {
+        .next = NULL,
         .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
     };
     
-    Pixel_t secondPixel = {
+    Node_t secondPixel = {
+        .next = NULL,
         .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
     };
-    Pixel_t thirdPixel = {
+
+    Node_t thirdPixel = {
+        .next = NULL,
         .value = 80,
         .index = -1,
         .metadata_id = 0,
         .dirtyBit = false
     };
     
-    Pixel_t fourthPixel = {
+    Node_t fourthPixel = {
+        .next = NULL,
         .value = 80,
         .index = -1,
         .metadata_id = 0,
@@ -130,8 +137,8 @@ static void test_add_several_items(void **state){
     
     // List validations
     assert_true(imageChunk->size == 4);
-    assert_true(imageChunk->head->pixel == &firstPixel);
-    assert_true(imageChunk->tail->pixel == &fourthPixel);
+    assert_true(imageChunk->head == &firstPixel);
+    assert_true(imageChunk->tail == &fourthPixel);
     
     // Individual pixels validations
     assert_true(firstPixel.index == 0);
@@ -140,7 +147,7 @@ static void test_add_several_items(void **state){
     assert_true(fourthPixel.index == 3);
 
     // Node validations
-    assert_true(imageChunk->head->next->pixel == &secondPixel);
+    assert_true(imageChunk->head->next == &secondPixel);
         // Circularity validations
     assert_true(imageChunk->tail->next == imageChunk->head);
 
@@ -155,9 +162,9 @@ static void test_generate_fixed_length_chunk(void **state){
 }
 
 static void test_get_pixel_by_index(void **state){
-    Pixel_t *first_pixel = get_pixel_by_index(imageChunk, 0);
-    Pixel_t *nth_pixel = get_pixel_by_index(imageChunk, 3);
-    Pixel_t *last_pixel = get_pixel_by_index(imageChunk, imageChunk->size-1);
+    Node_t *first_pixel = get_pixel_by_index(imageChunk, 0);
+    Node_t *nth_pixel = get_pixel_by_index(imageChunk, 3);
+    Node_t *last_pixel = get_pixel_by_index(imageChunk, imageChunk->size-1);
 
     // assert_int_equal(first_pixel->index, 0);
     assert_int_equal(last_pixel->index, imageChunk->size-1);
@@ -165,7 +172,8 @@ static void test_get_pixel_by_index(void **state){
 }
 
 static void test_replace_first_pixel(void **state){
-    Pixel_t newPixel = {
+    Node_t newPixel = {
+        .next = NULL,
         .value = 13,
         .index = -1,
         .metadata_id = 2,
@@ -174,21 +182,21 @@ static void test_replace_first_pixel(void **state){
 
     replace_nth_pixel(imageChunk, &newPixel, 0);
 
-    assert_int_equal(imageChunk->head->pixel->value, newPixel.value);
+    assert_int_equal(imageChunk->head->value, newPixel.value);
 }
 
 static void test_replace_nth_pixel(void **state){
-    Pixel_t newPixel = {
+    Node_t newPixel = {
         .value = 13,
         .index = -1,
         .metadata_id = 2,
         .dirtyBit = false
     };
     
-    Pixel_t *nextPixel_old = get_pixel_by_index(imageChunk, 5);
+    Node_t *nextPixel_old = get_pixel_by_index(imageChunk, 5);
     replace_nth_pixel(imageChunk, &newPixel, 4);
-    Pixel_t *nextPixel_new = get_pixel_by_index(imageChunk,5);
-    Pixel_t *replacedPixel = get_pixel_by_index(imageChunk, 4);
+    Node_t *nextPixel_new = get_pixel_by_index(imageChunk, 5);
+    Node_t *replacedPixel = get_pixel_by_index(imageChunk, 4);
 
     // Value is replaced
     assert_int_equal(replacedPixel->value, newPixel.value);
@@ -200,7 +208,7 @@ static void test_replace_nth_pixel(void **state){
 }
 
 static void test_replace_last_pixel(void **state){
-    Pixel_t newPixel = {
+    Node_t newPixel = {
         .value = 13,
         .index = -1,
         .metadata_id = 2,
@@ -208,10 +216,10 @@ static void test_replace_last_pixel(void **state){
     };
     int list_length = imageChunk->size;
 
-    Pixel_t *nextPixel_old = get_pixel_by_index(imageChunk, 0);
+    Node_t *nextPixel_old = get_pixel_by_index(imageChunk, 0);
     replace_nth_pixel(imageChunk, &newPixel, list_length-1);
-    Pixel_t *nextPixel_new = get_pixel_by_index(imageChunk,0);
-    Pixel_t *replacedPixel = get_pixel_by_index(imageChunk, list_length-1);
+    Node_t *nextPixel_new = get_pixel_by_index(imageChunk,0);
+    Node_t *replacedPixel = get_pixel_by_index(imageChunk, list_length-1);
 
     // Value is replaced
     assert_int_equal(replacedPixel->value, newPixel.value);
@@ -223,7 +231,7 @@ static void test_replace_last_pixel(void **state){
 }
 
 static void test_get_pixel_by_metadata_id(void **state){
-    Pixel_t newPixel = {
+    Node_t newPixel = {
         .value = 13,
         .index = -1,
         .metadata_id = 20,
@@ -232,7 +240,7 @@ static void test_get_pixel_by_metadata_id(void **state){
     
     replace_nth_pixel(imageChunk, &newPixel, 5);
 
-    Pixel_t *foundPixel = get_pixel_by_metadata_id(imageChunk, 20);
+    Node_t *foundPixel = get_pixel_by_metadata_id(imageChunk, 20);
 
     assert_true(foundPixel);
     assert_int_equal(foundPixel->value, newPixel.value);
@@ -250,7 +258,6 @@ int main(void) {
         cmocka_unit_test_setup_teardown(test_replace_first_pixel, setup_populated_list, teardown),
         cmocka_unit_test_setup_teardown(test_get_pixel_by_index, setup_populated_list, teardown),
         cmocka_unit_test_setup_teardown(test_replace_nth_pixel, setup_populated_list, teardown),
-        // cmocka_unit_test_setup_teardown(test_replace_last_pixel, setup_populated_list, teardown),
         cmocka_unit_test_setup_teardown(test_get_pixel_by_metadata_id, setup_populated_list, teardown),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);

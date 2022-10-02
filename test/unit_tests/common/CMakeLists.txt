@@ -5,15 +5,15 @@ set(CMAKE_BUILD_TYPE Debug)
 
 # Adding the projects to test
 add_subdirectory("${PROJECT_SOURCE_DIR}/../../../common/" "${PROJECT_BINARY_DIR}/common")
-
-set(SOURCES linked_list_test.c)
-
-add_executable(${PROJECT_NAME} ${SOURCES})
-
-target_link_libraries(${PROJECT_NAME} PUBLIC Common)
-
-target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/../../../")
-
-# Adding cmocka
 add_subdirectory("${PROJECT_SOURCE_DIR}/../../../cmocka" "${PROJECT_BINARY_DIR}/cmocka")
-target_link_libraries(${PROJECT_NAME} PUBLIC cmocka)
+
+set(SOURCES linked_list_test.c shared_memory_tests.c)
+
+add_executable(linked_list_test linked_list_test.c)
+add_executable(shared_memory_tests shared_memory_tests.c)
+
+target_link_libraries(linked_list_test PUBLIC Common cmocka)
+target_link_libraries(shared_memory_tests PUBLIC Common cmocka)
+
+target_include_directories(linked_list_test PUBLIC "${PROJECT_SOURCE_DIR}/../../../")
+target_include_directories(shared_memory_tests PUBLIC "${PROJECT_SOURCE_DIR}/../../../")

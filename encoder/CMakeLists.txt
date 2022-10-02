@@ -8,7 +8,7 @@ project(Encoder)
 # Es necesario que en esta carpeta tambien haya un CMakeLists
 add_subdirectory("${PROJECT_SOURCE_DIR}/../common/" "${PROJECT_BINARY_DIR}/common")
 
-# Setting sources files for encoder
+# Setting sources files
 set(SOURCES encoder.c)
 
 # Adding sources al executable
