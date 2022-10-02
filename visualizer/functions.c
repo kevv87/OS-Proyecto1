@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-void sem_down(Stat_t *stat_ptr, sem_t semaphore) {
+void sem_down(Statistic_t *statistic_ptr, sem_t semaphore) {
 
     clock_t sem_start;
     clock_t sem_end;
@@ -17,13 +17,13 @@ void sem_down(Stat_t *stat_ptr, sem_t semaphore) {
 
     sem_end = clock();
 
-    stat_ptr -> total_semaphore_waited_time += ((double)(sem_end - sem_start)) / CLOCKS_PER_SEC;
+    statistic_ptr -> total_semaphore_waited_time += ((double)(sem_end - sem_start)) / CLOCKS_PER_SEC;
 
 }
 
-void write(Stat_t *stat_ptr, void *shared_memory, void *value) {
+void write(Statistic_t *statistic_ptr, void *shared_memory, void *value) {
 
-    stat_ptr -> total_data_transfered ++;
+    statistic_ptr -> total_data_transfered ++;
 
     clock_t kernel_start;
     clock_t kernel_end;
@@ -34,23 +34,23 @@ void write(Stat_t *stat_ptr, void *shared_memory, void *value) {
 
     kernel_end = clock();
 
-    stat_ptr -> total_kernel_time += ((double)(kernel_end - kernel_start)) / CLOCKS_PER_SEC;
+    statistic_ptr -> total_kernel_time += ((double)(kernel_end - kernel_start)) / CLOCKS_PER_SEC;
 
 }
 
-void write_pixel(Stat_t *stat_ptr, void *sm_linked_list, Pixel_t *pixel) {
+void write_pixel(Statistic_t *statistic_ptr, void *sm_linked_list, Pixel_t *pixel) {
 
     if(pixel -> value >= 175) {
 
-        stat_ptr -> total_pixels_175 ++;
+        statistic_ptr -> total_pixels_175 ++;
 
     }
 
-    write(stat_ptr, sm_linked_list, pixel);
+    write(statistic_ptr, sm_linked_list, pixel);
 
 }
 
-void read(Stat_t *stat_ptr, void *sm_linked_list) {
+void read(Statistic_t *statistic_ptr, void *sm_linked_list) {
 
     clock_t kernel_start;
     clock_t kernel_end;
@@ -61,27 +61,39 @@ void read(Stat_t *stat_ptr, void *sm_linked_list) {
 
     kernel_end = clock();
 
-    stat_ptr -> total_kernel_time += ((double)(kernel_end - kernel_start)) / CLOCKS_PER_SEC;
+    statistic_ptr -> total_kernel_time += ((double)(kernel_end - kernel_start)) / CLOCKS_PER_SEC;
 
 }
+
+void clean_memory() {
+
+    // semaphores destory()
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int main() {
 
-    printf("Hola");
+    printf("Main");
 
     return 0;
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
