@@ -12,6 +12,33 @@ ImageChunk_t create_image_chunk(int node_quantity){
 	return chunk;
 }
 
+ImageChunk_t shm_create_image_chunk(void *ptr_to_shm_start, int node_quantity){
+	ImageChunk_t chunk = (ImageChunk_t) {
+		.size = 0,
+		.head = NULL,
+		.tail = NULL
+	};
+
+    write_shared_memory(ptr_to_shm_start, &chunk, sizeof(ImageChunk_t));
+	shm_append_n_default_nodes(ptr_to_shm_start, node_quantity);
+
+	return chunk;
+}
+
+int shm_append_n_default_nodes(void * ptr_to_shm_start, int node_quantity){
+    for(int i=0; i < node_quantity; i++){
+        Node_t pixel = (Node_t) {
+            .next = NULL,
+            .value = 80+i,
+            .index = -1,
+            .metadata_id = i+3,
+            .dirtyBit = false
+        };
+        shm_append_item(ptr_to_shm_start, &pixel);
+    }
+    return 0;
+}
+
 int append_n_default_nodes(ImageChunk_t *chunk, int node_quantity){
     Node_t *pixel;
     for(int i=0; i < node_quantity; i++){
@@ -26,6 +53,41 @@ int append_n_default_nodes(ImageChunk_t *chunk, int node_quantity){
         append_item(chunk, pixel);
     }
     return 0;
+}
+
+Node_t * determine_next_available_shm_ptr(void *ptr_to_shm_start, ImageChunk_t *chunk){
+    void * avail_ptr = ptr_to_shm_start;
+    avail_ptr += sizeof(ImageChunk_t) + chunk->size * sizeof(Node_t);
+    return (Node_t *) avail_ptr;
+}
+
+void shm_append_item(void *ptr_to_shm_start, Node_t *nodeToAppend){
+    
+    ImageChunk_t *chunk = (ImageChunk_t *) ptr_to_shm_start;
+
+    Node_t* newNode = 
+        determine_next_available_shm_ptr(ptr_to_shm_start, chunk);
+    
+    nodeToAppend->index = chunk->size;
+
+    write_shared_memory(newNode, nodeToAppend, sizeof(Node_t));
+
+	if(chunk->size == 0){
+		chunk->head = newNode;
+		chunk->tail = newNode;
+		newNode->next = newNode;
+	}else{
+        Node_t* tempNode;
+
+		tempNode = chunk->tail;
+		chunk->tail = newNode;
+		tempNode->next = chunk->tail;
+		newNode->next = chunk->head;
+	}
+
+	chunk->size++;
+
+	return;
 }
 
 void append_item(ImageChunk_t *chunk, Node_t *pixelToAppend){
