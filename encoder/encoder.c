@@ -12,7 +12,7 @@
 #define INPUT_LIMIT 1*KB
 
 struct Descriptor {
-    uint16_t encrypted_px;
+    int encrypted_px;
     int struct_index;
     int px_position;
     int is_read;
@@ -30,6 +30,7 @@ void read_image(char *file_name, struct ImgData *img_data) {
 	printf("Opening image file: %s...\n", file_name);
     img_data->img_ptr = stbi_load(file_name, &img_data->width, &img_data->height, &img_data->color_channels, 0);
 	if(img_data->img_ptr != NULL){
+        printf("%d, %d, %d\n\n\n", img_data->width, img_data->height, img_data->color_channels);
         img_data->img_size = img_data->width * img_data->height * img_data->color_channels;
 		return;
 	}
@@ -57,6 +58,12 @@ int encrypt_pixel(int pixel, int key) {
     return pixel;
 }
 
+int format_hex_px(int red, int green, int blue) {
+    printf("%d, %d, %d\n", red, green, blue);
+    int hex_px = (red << 16) + (green << 8) + blue;
+    return hex_px;
+}
+
 char * get_time() {
     time_t current_time;
     struct tm * time_info;
@@ -70,7 +77,7 @@ char * get_time() {
     return pointer;
 }
 
-struct Descriptor * generate_descriptor(uint16_t encrypted_px, int px_position) {
+struct Descriptor * generate_descriptor(int encrypted_px, int px_position) {
     struct Descriptor *desc = malloc(sizeof(struct Descriptor));
     desc->encrypted_px = encrypted_px;
     desc->px_position = px_position;
@@ -84,7 +91,7 @@ void insert_descriptor(struct Descriptor *desc, int pos) {
     strncpy(desc->insertion_time, time_str, 9);
     //(desc_array+(pos*sizeof(desc))) = desc;
     desc_array[pos] = *desc;
-    printf("Encrypted px: %d, Structure index: %d, Px position in file: %d, Insertion time: %s, Is read: %d\n",
+    printf("Encrypted px: %x, Structure index: %d, Px position in file: %d, Insertion time: %s, Is read: %d\n",
     desc->encrypted_px, desc->struct_index, desc->px_position, desc->insertion_time, desc->is_read);
 }
 
@@ -103,7 +110,8 @@ int main() {
         int pos_counter = 0;
 
         for (unsigned char *px_iter=img_data->img_ptr; px_iter!=(img_data->img_ptr + img_data->img_size); px_iter+=img_data->color_channels) {
-            struct Descriptor *desc = generate_descriptor(encrypt_pixel(*px_iter, *encryption_key), pos_counter);
+            int hex_px = format_hex_px(*px_iter, *(px_iter+sizeof(unsigned char)), *(px_iter+2*sizeof(unsigned char)));
+            struct Descriptor *desc = generate_descriptor(encrypt_pixel(hex_px, *encryption_key), pos_counter);
             if (is_run == 1) {
                 insert_descriptor(desc, pos_counter);
             }
@@ -113,7 +121,7 @@ int main() {
                 pos_counter -= 1;
             }
             pos_counter += 1;
-            is_run = -1*is_run;
+            is_run *= -1;
         }
     }
     free(image_path);
