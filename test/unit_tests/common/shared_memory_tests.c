@@ -33,7 +33,7 @@ int teardown_test(void ** state){
 
 void test_no_error(void ** state){
     int toWrite = 1;
-    Pixel_t *shm_ptr = obtain_shared_pointer(sizeof(int), shared_fd);
+    Node_t *shm_ptr = obtain_shared_pointer(sizeof(int), shared_fd);
     assert_true(shm_ptr != NULL);
 
 	int *ptr = write_shared_memory(shm_ptr, &toWrite, sizeof(int));
@@ -43,7 +43,7 @@ void test_no_error(void ** state){
 
 void test_write_int(void ** state){
     int toWrite = 1;
-    Pixel_t *shm_ptr = obtain_shared_pointer(sizeof(int), shared_fd);
+    Node_t *shm_ptr = obtain_shared_pointer(sizeof(int), shared_fd);
 
 	int *ptr = (int *) write_shared_memory(shm_ptr, &toWrite, sizeof(int));
 
@@ -51,16 +51,16 @@ void test_write_int(void ** state){
 }
 
 void test_write_struct(void ** state){
-    Pixel_t example_pixel = {
+    Node_t example_pixel = {
         .value = 80,
         .index = 0,
         .metadata_id = 1,
         .dirtyBit = false
     };
 
-    Pixel_t *shm_ptr = obtain_shared_pointer(sizeof(Pixel_t), shared_fd);
+    Node_t *shm_ptr = obtain_shared_pointer(sizeof(Node_t), shared_fd);
 
-    Pixel_t *ptr = (Pixel_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
+    Node_t *ptr = (Node_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
 
     assert_int_equal(example_pixel.value, ptr->value);
     assert_int_equal(example_pixel.dirtyBit, ptr->dirtyBit);
@@ -84,19 +84,19 @@ void test_read_int(void ** state){
 }
 
 void test_read_struct(void ** state){
-    Pixel_t example_pixel = {
+    Node_t example_pixel = {
         .value = 80,
         .index = 0,
         .metadata_id = 1,
         .dirtyBit = false
     };
 
-    Pixel_t *shm_ptr = obtain_shared_pointer(sizeof(Pixel_t), shared_fd);
+    Node_t *shm_ptr = obtain_shared_pointer(sizeof(Node_t), shared_fd);
 
-    Pixel_t *ptr = (Pixel_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
+    Node_t *ptr = (Node_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
     
-    Pixel_t *read_ptr = malloc(sizeof(Pixel_t));
-    read_shared_memory(read_ptr, shm_ptr, sizeof(Pixel_t));
+    Node_t *read_ptr = malloc(sizeof(Node_t));
+    read_shared_memory(read_ptr, shm_ptr, sizeof(Node_t));
 
     assert_true(read_ptr!= NULL);
     assert_int_equal(read_ptr->value, example_pixel.value);

@@ -3,18 +3,13 @@
 
 #include <stdbool.h>
 
-typedef struct Pixel {
+typedef struct Node Node_t;
+typedef struct Node{
+	Node_t* next;
 	int value;
 	int index;
 	int metadata_id;
 	bool dirtyBit;
-} Pixel_t;
-
-typedef struct Node Node_t;
-typedef struct Node{
-	Pixel_t* pixel;
-	Node_t* next;
-	int index;	
 } Node_t;
 
 typedef struct ImageChunk{

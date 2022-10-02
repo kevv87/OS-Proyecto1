@@ -13,10 +13,11 @@ ImageChunk_t create_image_chunk(int node_quantity){
 }
 
 int append_n_default_nodes(ImageChunk_t *chunk, int node_quantity){
-    Pixel_t *pixel;
+    Node_t *pixel;
     for(int i=0; i < node_quantity; i++){
-        pixel = malloc(sizeof(Pixel_t));
-        *pixel = (Pixel_t) {
+        pixel = malloc(sizeof(Node_t));
+        *pixel = (Node_t) {
+            .next = NULL,
             .value = 80+i,
             .index = -1,
             .metadata_id = i+3,
@@ -27,13 +28,9 @@ int append_n_default_nodes(ImageChunk_t *chunk, int node_quantity){
     return 0;
 }
 
-void append_item(ImageChunk_t *chunk, Pixel_t *pixelToAppend){
-	Node_t* newNode = malloc(sizeof(Node_t));
-	*newNode = (Node_t) {
-		.pixel = pixelToAppend,
-		.next = NULL,
-		.index = chunk->size
-	};
+void append_item(ImageChunk_t *chunk, Node_t *pixelToAppend){
+	Node_t* newNode = pixelToAppend;
+    newNode->index = chunk->size;
 
 	Node_t* tempNode;
 
@@ -50,12 +47,10 @@ void append_item(ImageChunk_t *chunk, Pixel_t *pixelToAppend){
 
 	chunk->size++;
 
-	pixelToAppend->index = newNode->index;
-
 	return;
 }
 
-int replace_nth_pixel(ImageChunk_t *imageChunk, Pixel_t *newPixel, int pos){
+int replace_nth_pixel(ImageChunk_t *imageChunk, Node_t *newPixel, int pos){
 
 	if(!imageChunk)
 		return -1;
@@ -65,16 +60,15 @@ int replace_nth_pixel(ImageChunk_t *imageChunk, Pixel_t *newPixel, int pos){
 	if(!prevNode)
 		return -1;
 
-	Node_t *newNode = malloc(sizeof(Node_t));
+	Node_t *newNode = newPixel;
 	Node_t *tempNode = prevNode->next;
 	prevNode->next =  newNode;
 	newNode->next = tempNode->next;
-	newNode->pixel = newPixel;
-	newNode->pixel->index = tempNode->index;
+    newNode->index = tempNode->index;
 
 	if(pos==0){
 		imageChunk->head = newNode;
-		imageChunk->head->pixel->index = 0;
+		imageChunk->head->index = 0;
 	}
 	
 	free(tempNode);
@@ -108,22 +102,21 @@ Node_t *navigate_to_node(ImageChunk_t *imageChunk, int indexToRetrieve){
 	return NULL;
 }
 
-Pixel_t *get_pixel_by_index(ImageChunk_t *imageChunk, int indexToRetrieve){
-	Pixel_t *pixelResult;
+Node_t *get_pixel_by_index(ImageChunk_t *imageChunk, int indexToRetrieve){
+	Node_t *pixelResult;
 	Node_t *node_retrieved = navigate_to_node(imageChunk, indexToRetrieve);
 
 	if (node_retrieved)
-		return node_retrieved->pixel;
+		return node_retrieved;
 
 	return NULL;
 }
 
-Pixel_t *get_pixel_by_metadata_id(ImageChunk_t *imageChunk, int metadataId){
+Node_t *get_pixel_by_metadata_id(ImageChunk_t *imageChunk, int metadataId){
 	Node_t *node_i = imageChunk->head;
 	for(int i = 0; i<imageChunk->size;i++){
-		if(node_i->pixel->metadata_id == metadataId){
-			printf("Found! %d\n", node_i->pixel->metadata_id);
-			return node_i->pixel;
+		if(node_i->metadata_id == metadataId){
+			return node_i;
 		}
 		node_i = node_i->next;
 	}
