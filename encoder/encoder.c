@@ -17,6 +17,14 @@
 #define KB 1024
 #define INPUT_LIMIT 1*KB
 
+struct Descriptor {
+    int encrypted_px;
+    int struct_index;
+    int px_position;
+    int is_read;
+    char insertion_time[9];
+};
+struct Descriptor desc_array[2500];
 
 //todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //Borrar! (eventualmente)
@@ -30,6 +38,7 @@ void read_image(char *file_name, struct ImgData *img_data)
 	printf("Opening image file: %s...\n", file_name);
     img_data->img_ptr = stbi_load(file_name, &img_data->width, &img_data->height, &img_data->color_channels, 0);
 	if(img_data->img_ptr != NULL){
+        printf("%d, %d, %d\n\n\n", img_data->width, img_data->height, img_data->color_channels);
         img_data->img_size = img_data->width * img_data->height * img_data->color_channels;
 		return;
 	}
@@ -57,9 +66,8 @@ int encrypt_pixel(int pixel, int key) {
     return pixel;
 }
 
-int format_hex_px(int red, int green, int blue)
-{
-    printf("%d, %d, %d\n", red, green, blue);
+
+int format_hex_px(int red, int green, int blue) {
     int hex_px = (red << 16) + (green << 8) + blue;
     return hex_px;
 }
@@ -77,7 +85,7 @@ char * get_time() {
     return pointer;
 }
 
-struct Descriptor * generate_descriptor(uint16_t encrypted_px, int px_position) {
+struct Descriptor * generate_descriptor(int encrypted_px, int px_position) {
     struct Descriptor *desc = malloc(sizeof(struct Descriptor));
     desc->encrypted_px = encrypted_px;
     desc->px_position = px_position;
@@ -90,9 +98,8 @@ void insert_descriptor(struct Descriptor *desc, int pos)
     desc->struct_index = pos;
     char * time_str = get_time();
     strncpy(desc->insertion_time, time_str, 9);
-    //(desc_array+(pos*sizeof(desc))) = desc;
     desc_array[pos] = *desc;
-    printf("Encrypted px: %d, Structure index: %d, Px position in file: %d, Insertion time: %s, Is read: %d\n",
+    printf("Encrypted px: %x, Structure index: %d, Px position in file: %d, Insertion time: %s, Is read: %d\n",
     desc->encrypted_px, desc->struct_index, desc->px_position, desc->insertion_time, desc->is_read);
 }
 
@@ -196,8 +203,6 @@ int main()
                 }
             }
         }//Aca termina la pasacion de pixeles
-
-
 
     }
 

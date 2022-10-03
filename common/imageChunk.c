@@ -6,8 +6,9 @@ ImageChunk_t create_image_chunk(void *ptr_to_shm_start, int node_quantity){
 		.head = NULL,
 		.tail = NULL
 	};
-
-    write_shared_memory(ptr_to_shm_start, &chunk, sizeof(ImageChunk_t));
+    ImageChunk_t * imageChunk_ptr = (ImageChunk_t *) ptr_to_shm_start;
+    *imageChunk_ptr = chunk;
+    
 	append_n_default_nodes(ptr_to_shm_start, node_quantity);
 
 	return chunk;
