@@ -23,8 +23,7 @@ int id=1;
 //todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-void read_image(char *file_name, struct ImgData *img_data)
-{
+void read_image(char *file_name, struct ImgData *img_data) {
 	printf("Opening image file: %s...\n", file_name);
     img_data->img_ptr = stbi_load(file_name, &img_data->width, &img_data->height, &img_data->color_channels, 0);
 	if(img_data->img_ptr != NULL){
@@ -61,8 +60,7 @@ int format_hex_px(int red, int green, int blue) {
     return hex_px;
 }
 
-char * get_time()
-{
+char * get_time() {
     time_t current_time;
     struct tm * time_info;
     char time_str[9];
@@ -92,8 +90,7 @@ void insert_descriptor(Node_t *node, int pos) {
 }
 
 
-int main()
-{
+int main() {
     // Setting configuration
     ///Se extraen los valores
     char *image_path = malloc(sizeof(char)*INPUT_LIMIT);
@@ -135,18 +132,9 @@ int main()
 
     int metadata_id = -1;
 
-    for(int i=0; i<MAX_METADATA_NODES; i++)
-    {
-        if(&((metadata_sh_ptr->metadata_array)[i]) == NULL)
-        {
-            printf("Es nulo");
-            Metadata_Node_t new_node = (Metadata_Node_t) {
-                .total_pixeles = img_data->img_size,
-                .width = img_data->width,
-                .height = img_data->height,
-                .has_decoder = 0
-            };
-
+    for(int i=0; i<MAX_METADATA_NODES; i++) {
+        metadata_sh_ptr->metadata_array[i].has_decoder = 1;s_decoder = 0
+            
             ///Se inicia el semaforo de lectura de imagen n
             sem_init(&(metadata_sh_ptr->metadata_array[i].image_semaphore), 1, 0);
 
@@ -154,13 +142,11 @@ int main()
 
             break;
 
-        }
-
-    }
+    }    
 
     if(metadata_id == -1) {
 
-        printf("Tabla de metadatops llena");
+        printf("Tabla de metadatos llena");
 
         return -1;
 
@@ -169,13 +155,7 @@ int main()
     ///Hace up para liberar el uso de la tabla de metadata
     sem_post(&(metadata_sh_ptr->sem_metadata_table));
 
-
-
-
-
-
-    if (img_data != NULL)
-    {
+    if (img_data != NULL) {
         int px_position = 0;
         for(unsigned char *px_iter=img_data->img_ptr; px_iter!=(img_data->img_ptr + img_data->img_size); px_iter+=img_data->color_channels)
         {
@@ -183,7 +163,13 @@ int main()
             Node_t *node = generate_descriptor(encrypt_pixel(hex_px, *encryption_key), 7);
 
             ///Encoders semaphore down
+              Node_t *node = generate_descriptor(encrypt_pixel(hex_px, *encryption_key), 7);
+
+            ///Encoders semaphore down
             sem_down(statistic_sh_ptr, chunk_sh_ptr->sem_encoders);
+
+            ///Acces shared chunk
+          sem_down(statistic_sh_ptr, chunk_sh_ptr->sem_encoders);
 
             ///Acces shared chunk
             Node_t * node_i = chunk_sh_ptr->head;
@@ -234,17 +220,17 @@ int main()
 
     }
 
+    /// Decrementar numero de instancias
+    sem_wait(&(statistic_sh_ptr->semaphore_statistic));
+    statistic_sh_ptr -> total_instances -= 1;
+    if(statistic_sh_ptr -> total_instances == 0) {
+        sem_post(&(statistic_sh_ptr -> semaphore_visualizer))
+    }
+    sem_post(&(statistic_sh_ptr->semaphore_statistic));
 
-
-
-
-    free(image_path);
-    free(pixel_quantity);
     free(execution_mode);
     free(encryption_key);
     free(img_data);
-
-
 
     free(chunk_sh_ptr);
     free(metadata_sh_ptr);
@@ -252,3 +238,4 @@ int main()
 }
 
 
+node_i->metadata_id == decod_cfg.metadata_id
