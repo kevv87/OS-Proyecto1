@@ -258,6 +258,9 @@ static int run_decoder() {
     /// Decrementar numero de instancias
     sem_wait(&(statistic_sh_ptr->semaphore_statistic));
     statistic_sh_ptr -> total_instances -= 1;
+    if(statistic_sh_ptr -> total_instances == 0) {
+        sem_post(&(statistic_sh_ptr -> semaphore_visualizer))
+    }
     sem_post(&(statistic_sh_ptr->semaphore_statistic));
 }
 
@@ -280,45 +283,4 @@ void start_decoder_thread(GtkWidget *widget) {
     GThread   *decod_thread;
 	decod_thread = g_thread_new(NULL,(GThreadFunc)run_decoder, NULL);
 	gtk_widget_set_sensitive(widget, FALSE) ;
-}
-
-static void init_application (GtkApplication *app, gpointer user_data) {
-    // Decoder configuration
-    get_decoder_params();
-    configure_shared_data();
-
-    GtkWidget *window;
-    GtkWidget *frame;
-    GtkWidget *drawing_area;
-
-    window = gtk_application_window_new (app);
-    gtk_window_set_title (GTK_WINDOW (window), "Decoded image");
-    gtk_container_set_border_width (GTK_CONTAINER (window), 1);
-    frame = gtk_frame_new (NULL);
-    gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
-    gtk_container_add (GTK_CONTAINER (window), frame);
-    drawing_area = gtk_drawing_area_new ();
-    
-    // Setting size
-    gtk_widget_set_size_request (drawing_area, decod_cfg.img_width, decod_cfg.img_height);
-    gtk_container_add (GTK_CONTAINER (frame), drawing_area);
-
-    // SIGNALS
-    g_signal_connect(window, "destroy", G_CALLBACK (close_window), NULL);
-    g_signal_connect(drawing_area,"configure-event", G_CALLBACK (configure_event_cb), NULL);
-    g_signal_connect(drawing_area, "draw", G_CALLBACK (redraw_screen), NULL);
-
-    // Execution
-    gtk_widget_show_all (window);
-    start_decoder_thread(drawing_area);
-}
-
-int main(int argc, char **argv) {
-    // GTK configuration
-    int app_status;
-    GtkApplication *app = gtk_application_new("org.gtk.decoded_img", G_APPLICATION_FLAGS_NONE);;
-    g_signal_connect(app, "activate", G_CALLBACK (init_application), NULL);
-    app_status = g_application_run (G_APPLICATION (app), argc, argv);
-    g_object_unref (app);
-    return app_status;
-}
+}git push --set-upstream origin feat/complete_decoder
