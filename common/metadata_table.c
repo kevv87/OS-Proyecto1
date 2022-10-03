@@ -1,17 +1,24 @@
 #include "include/metadata_table.h"
 
-MetadataEntry_t * initialize_metadata_table(int n_entries){
-    size_t metadata_table_size = sizeof(MetadataEntry_t) * n_entries;
 
-    int fd = obtain_shared_fd(METADATA_SHM_NAME, true, metadata_table_size);
+static int get_id()
+{
+    key_t key = ftok(BLOCK_NAME, 0);
+    return shmget(key, BLOCK_SIZE, 0664 | IPC_CREAT);
+}
+shared_struct_metadata* locate_shared_memory_block()
+{
+    int id = get_id();
+    shared_struct_metadata * res = (shared_struct_metadata*) shmat(id, NULL, 0);
+    return res;
+}
 
-    if(fd == -1){
-        perror("failed initialize metadata");
-        return NULL;
-    }
 
-    MetadataEntry_t * metadata_table =
-        (MetadataEntry_t *) obtain_shared_pointer(metadata_table_size, fd);
-    
-    return metadata_table;
+shared_struct_metadata* initialize_metadata_table()
+{
+    shared_struct_metadata shs;
+    shared_struct_metadata* raw_shs_ptr = &shs;
+    shared_struct_metadata* shs_ptr = locate_shared_memory_block();
+    memcpy(shs_ptr, raw_shs_ptr, BLOCK_SIZE);
+    return shs_ptr;
 }
