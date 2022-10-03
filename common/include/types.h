@@ -11,7 +11,7 @@ typedef struct Node Node_t;
 typedef struct Node{
 	Node_t* next;
 	int value;
-	int index;
+	int index;//indice dentro de la estructura
 	int metadata_id;
 	bool dirtyBit;
     int px_position;
@@ -53,13 +53,6 @@ typedef struct {
     sem_t semaphore_statistic;
     sem_t semaphore_visualizer;
 } Statistic_t;
-
-
-
-
-
-
-
 
 
 

@@ -21,11 +21,12 @@
 
 void *obtain_shm_pointer(int shmid, void * map_ptr);
 
-void sem_down(Statistic_t *statistic_ptr, sem_t semaphore);
+void sem_down(Statistic_t *statistic_ptr, sem_t * semaphore);
 
 void * write_shared_memory(void *dst_shared_ptr, void *src_ptr, size_t size);
 
 int get_id(char * name, size_t size);
 
+int close_shm_ptr(int shmid, void * shm_ptr);
 
 #endif //SHARED_MEMORY_H

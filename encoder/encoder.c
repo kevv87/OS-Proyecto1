@@ -111,17 +111,25 @@ int main()
     int stat_sh_id = get_id(STATISTIC_PATH, STATISTIC_BLOCK_SIZE);
 
     ///Obtiene los punteros a memoria compartida
-    ImageChunk_t* chunk_sh_ptr = malloc(sizeof(ImageChunk_t));
-    obtain_shm_pointer(chunk_sh_id, chunk_sh_ptr);
+    ImageChunk_t* chunk_sh_ptr;
 
-    Metadata_Table_t* metadata_sh_ptr = malloc(sizeof(Metadata_Table_t));
-    obtain_shm_pointer(metadata_sh_id, metadata_sh_ptr);
+    chunk_sh_ptr = obtain_shm_pointer(chunk_sh_id, NULL);
 
-    Statistic_t* statistic_sh_ptr = malloc(sizeof(Statistic_t));
-    obtain_shm_pointer(stat_sh_id, statistic_sh_ptr);
+    Metadata_Table_t* metadata_sh_ptr;
+    metadata_sh_ptr = obtain_shm_pointer(metadata_sh_id, NULL);
+
+    Statistic_t* statistic_sh_ptr;
+    statistic_sh_ptr = obtain_shm_pointer(stat_sh_id, NULL);
 
     ImgData_t *img_data = malloc(sizeof(ImgData_t));
     read_image(image_path, img_data);
+
+    //int sem_v;
+    //sem_getvalue(&(chunk_sh_ptr->sem_encoders), &sem_v);
+    //printf("Sem value: %d\n", sem_v);
+
+
+    //    /home/majinloop/Git/OS-Proyecto1/encoder/bw50.jpg
 
     /// Incrementar numero de instancias
     sem_wait(&(statistic_sh_ptr->semaphore_statistic));
@@ -131,29 +139,27 @@ int main()
     sem_post(&(statistic_sh_ptr->semaphore_statistic));
 
     ///Hace down para reservar el uso de la tabla de metadata
-    sem_down(statistic_sh_ptr, metadata_sh_ptr->sem_metadata_table);
+    sem_down(statistic_sh_ptr, &(metadata_sh_ptr->sem_metadata_table));
 
     int metadata_id = -1;
 
     for(int i=0; i<MAX_METADATA_NODES; i++)
     {
-        if(&((metadata_sh_ptr->metadata_array)[i]) == NULL)
+        if((metadata_sh_ptr->metadata_array)[i].height == 0) // Shared memory esta inicializada en 0, entonces todos los campos son 0
         {
             printf("Es nulo");
-            Metadata_Node_t new_node = (Metadata_Node_t) {
-                .total_pixeles = img_data->img_size,
-                .width = img_data->width,
-                .height = img_data->height,
-                .has_decoder = 0
-            };
+            Metadata_Node_t * new_node = &((metadata_sh_ptr->metadata_array)[i]);
+            new_node->total_pixeles = img_data->img_size;
+            new_node->height = img_data->height;
+            new_node->width = img_data->width;
+            new_node->has_decoder = false;
 
             ///Se inicia el semaforo de lectura de imagen n
-            sem_init(&(metadata_sh_ptr->metadata_array[i].image_semaphore), 1, 0);
+            sem_init(&(new_node->image_semaphore), 1, 0);
 
             metadata_id = i;
 
             break;
-
         }
 
     }
@@ -169,11 +175,6 @@ int main()
     ///Hace up para liberar el uso de la tabla de metadata
     sem_post(&(metadata_sh_ptr->sem_metadata_table));
 
-
-
-
-
-
     if (img_data != NULL)
     {
         int px_position = 0;
@@ -183,7 +184,7 @@ int main()
             Node_t *node = generate_descriptor(encrypt_pixel(hex_px, *encryption_key), 7);
 
             ///Encoders semaphore down
-            sem_down(statistic_sh_ptr, chunk_sh_ptr->sem_encoders);
+            sem_down(statistic_sh_ptr, &(chunk_sh_ptr->sem_encoders));
 
             ///Acces shared chunk
             Node_t * node_i = chunk_sh_ptr->head;
@@ -233,7 +234,7 @@ int main()
         }//Aca termina la pasacion de pixeles
 
     }
-
+//   /home/majinloop/Git/OS-Proyecto1/encoder/bw50.jpg
 
 
 
@@ -249,6 +250,14 @@ int main()
     free(chunk_sh_ptr);
     free(metadata_sh_ptr);
     free(statistic_sh_ptr);
+
+    close_shm_ptr(chunk_sh_id, NULL);
+    close_shm_ptr(metadata_sh_id, NULL);
+    close_shm_ptr(stat_sh_id, NULL);
+
+    // Subir el contador de procesos activos
+
+    return 0;
 }
 
 
