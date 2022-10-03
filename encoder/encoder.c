@@ -224,7 +224,7 @@ int main() {
     sem_wait(&(statistic_sh_ptr->semaphore_statistic));
     statistic_sh_ptr -> total_instances -= 1;
     if(statistic_sh_ptr -> total_instances == 0) {
-        sem_post(&(statistic_sh_ptr -> semaphore_visualizer))
+        sem_post(&(statistic_sh_ptr -> semaphore_visualizer));
     }
     sem_post(&(statistic_sh_ptr->semaphore_statistic));
 
