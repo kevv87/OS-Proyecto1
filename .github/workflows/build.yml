@@ -50,4 +50,3 @@ jobs:
           cmake ..
           make
           ./linked_list_on_shared_memory_test
-          ./shared_memory_tests

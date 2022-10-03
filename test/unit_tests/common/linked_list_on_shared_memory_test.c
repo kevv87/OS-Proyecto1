@@ -61,6 +61,7 @@ int teardown(void **state){
         perror("close_shm_ptr failed");
         return -1;
     }
+    free(ptr_to_shm_start);
     return 0;
 }
 
@@ -260,6 +261,7 @@ static void test_generate_fixed_length_chunk(void **state){
     assert_int_equal(imageChunk->size, node_quantity);
 
     close_shm_ptr(shmid, ptr_to_shm_start);
+    free(ptr_to_shm_start);
 }
 
 static void test_get_pixel_by_index(void **state){
