@@ -9,7 +9,7 @@ project(Visualizer)
 add_subdirectory("${PROJECT_SOURCE_DIR}/../common/" "${PROJECT_BINARY_DIR}/common")
 
 # Setting sources files for decoder
-set(SOURCES init.c)
+set(SOURCES visualizer.c)
 
 # Adding sources al executable
 # Tambien aqui se crea el target, con el mismo nombre del project name
