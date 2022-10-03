@@ -60,35 +60,6 @@ void append_item(void *ptr_to_shm_start, Node_t *nodeToAppend){
 
 	chunk->size++;
 
-	return;
-}
-
-int replace_nth_pixel(ImageChunk_t *imageChunk, Node_t *newPixel, int pos){
-
-	if(!imageChunk)
-		return -1;
-
-	Node_t *prevNode = navigate_to_prev_node(imageChunk, pos);
-    Node_t *tempNode = malloc(sizeof(Node_t));
-
-	if(!prevNode)
-		return -1;
-
-    tempNode = read_shared_memory(tempNode, prevNode->next, sizeof(Node_t));
-	Node_t *newNode = 
-        write_shared_memory(prevNode->next, newPixel, sizeof(Node_t));
- 
-	newNode->next = tempNode->next;
-    newNode->index = tempNode->index;
-
-	if(pos==0){
-		imageChunk->head = newNode;
-		imageChunk->head->index = 0;
-	}
-
-    free(tempNode);
-	
-	return 0;
 }
 
 Node_t *navigate_to_prev_node(ImageChunk_t *imageChunk, int nextIndex){
@@ -109,33 +80,3 @@ Node_t *navigate_to_prev_node(ImageChunk_t *imageChunk, int nextIndex){
 	return NULL;
 }
 
-Node_t *navigate_to_node(ImageChunk_t *imageChunk, int indexToRetrieve){
-	Node_t* node_prev = navigate_to_prev_node(imageChunk, indexToRetrieve);
-
-	if(node_prev)
-		return node_prev->next;
-
-	return NULL;
-}
-
-Node_t *get_pixel_by_index(ImageChunk_t *imageChunk, int indexToRetrieve){
-	Node_t *pixelResult;
-	Node_t *node_retrieved = navigate_to_node(imageChunk, indexToRetrieve);
-
-	if (node_retrieved)
-		return node_retrieved;
-
-	return NULL;
-}
-
-Node_t *get_pixel_by_metadata_id(ImageChunk_t *imageChunk, int metadataId){
-	Node_t *node_i = imageChunk->head;
-	for(int i = 0; i<imageChunk->size;i++){
-		if(node_i->metadata_id == metadataId){
-			return node_i;
-		}
-		node_i = node_i->next;
-	}
-	printf("Not found\n");
-	return NULL;
-}

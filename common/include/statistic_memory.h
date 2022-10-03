@@ -1,8 +1,0 @@
-//
-// Created by majinloop on 03/10/22.
-//
-
-#ifndef OS_PROYECTO1_STATISTIC_MEMORY_H
-#define OS_PROYECTO1_STATISTIC_MEMORY_H
-
-#endif //OS_PROYECTO1_STATISTIC_MEMORY_H

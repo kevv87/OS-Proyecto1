@@ -1,5 +1,5 @@
-set(SOURCES helloWorld.c imageChunk.c shared_memory.c metadata_table.c)
-set(HEADERS include/helloWorld.h include/imageChunk.h include/shared_memory.h include/constants.h)
+set(SOURCES imageChunk.c shared_memory.c)
+set(HEADERS include/imageChunk.h include/shared_memory.h include/constants.h include/types.h)
 
 set(LIBRARY_NAME Common)
 
