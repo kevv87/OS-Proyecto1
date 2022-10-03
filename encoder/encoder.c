@@ -8,13 +8,12 @@
 #include <semaphore.h>
 #include "common/include/imageChunk.h"
 #include "common/include/shared_memory.h"
-
+#include "stb_image/stb_image.h"
+#include "metadata_table.h"
+#include "include/types.h"
 
 #define SHM_CHUNK "/shm_chunk"
-
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image/stb_image.h"
-
 #define KB 1024
 #define INPUT_LIMIT 1*KB
 
@@ -25,23 +24,6 @@
 int id=1;
 //todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
-struct Descriptor
-{
-    uint16_t encrypted_px;
-    int struct_index;
-    int px_position;
-    int is_read;
-    char insertion_time[9];
-};
-struct Descriptor desc_array[2500];
-
-struct ImgData
-{
-    int width, height, color_channels;
-    unsigned char *img_ptr;
-    size_t img_size;
-};
 
 void read_image(char *file_name, struct ImgData *img_data)
 {
@@ -115,6 +97,7 @@ void insert_descriptor(struct Descriptor *desc, int pos)
 }
 
 
+
 int main()
 {
     // Setting configuration
@@ -159,12 +142,15 @@ int main()
     read_image(image_path, img_data);
     if (img_data != NULL)
     {
-        int pos_counter = 0;
+
+        shared_struct_metadata* shs_metadata = initialize_metadata_table();
+
+
 
         for(unsigned char *px_iter=img_data->img_ptr; px_iter!=(img_data->img_ptr + img_data->img_size); px_iter+=img_data->color_channels)
         {
             int hex_px = format_hex_px(*px_iter, *(px_iter+sizeof(unsigned char)), *(px_iter+2*sizeof(unsigned char)));
-            struct Descriptor *desc = generate_descriptor(encrypt_pixel(hex_px, *encryption_key), pos_counter);
+            struct Descriptor *desc = generate_descriptor(encrypt_pixel(hex_px, *encryption_key), 7);
 
 
             //int sem_value=100;
@@ -175,6 +161,14 @@ int main()
             //Encoders semaphore down
             //sem_wait(&(chunk->sem_encoders));
             //     /home/majinloop/Git/OS-Proyecto1/encoder/bw50.jpg
+
+
+
+
+
+
+
+
 
 
             //Acces shared chunk
