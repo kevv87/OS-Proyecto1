@@ -9,109 +9,117 @@
 #include "common/include/shared_memory.h"
 #include "common/include/types.h"
 
-int shared_fd;
+// #define SHM_NAME "/shm1"
 
-// ****************************************************************
-// Setup
+// int shared_fd;
 
-int setup_basic( void ** state){
-    shared_fd = obtain_shared_fd("test", true, 4096);
-    if (shared_fd == -1)
-        return -1;
-    return 0;
-}
+// // ****************************************************************
+// // Setup
 
-int teardown_test(void ** state){
-    if(close_shared_memory("test") == -1)
-        return -1;
+// // int setup_basic( void ** state){
+// //     shared_fd = obtain_shared_fd("test", true, 4096);
+// //     if (shared_fd == -1)
+// //         return -1;
+// //     return 0;
+// // }
 
-    return 0;
-}
+// int teardown_test(void ** state){
+//     if(close_shared_memory("test") == -1)
+//         return -1;
 
-// ****************************************************************
-// Tests
+//     return 0;
+// }
 
-void test_no_error(void ** state){
-    int toWrite = 1;
-    Node_t *shm_ptr = obtain_shared_pointer(sizeof(int), shared_fd);
-    assert_true(shm_ptr != NULL);
+// // ****************************************************************
+// // Tests
 
-	int *ptr = write_shared_memory(shm_ptr, &toWrite, sizeof(int));
+// void test_no_error(void ** state){
+//     int toWrite = 1;
 
-	assert_true(ptr!=NULL);
-}
+//     Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(int));
 
-void test_write_int(void ** state){
-    int toWrite = 1;
-    Node_t *shm_ptr = obtain_shared_pointer(sizeof(int), shared_fd);
+//     assert_true(shm_ptr != NULL);
 
-	int *ptr = (int *) write_shared_memory(shm_ptr, &toWrite, sizeof(int));
+// 	int *ptr = write_shared_memory(shm_ptr, &toWrite, sizeof(int));
 
-    assert_int_equal(1, *ptr);
-}
+// 	assert_true(ptr!=NULL);
+//     close_shm_ptr(shm_ptr);
+// }
 
-void test_write_struct(void ** state){
-    Node_t example_pixel = {
-        .value = 80,
-        .index = 0,
-        .metadata_id = 1,
-        .dirtyBit = false
-    };
+// void test_write_int(void ** state){
+//     int toWrite = 1;
+//     Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(int));
 
-    Node_t *shm_ptr = obtain_shared_pointer(sizeof(Node_t), shared_fd);
+// 	int *ptr = (int *) write_shared_memory(shm_ptr, &toWrite, sizeof(int));
 
-    Node_t *ptr = (Node_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
+//     assert_int_equal(1, *ptr);
+//     close_shm_ptr(shm_ptr);
+// }
 
-    assert_int_equal(example_pixel.value, ptr->value);
-    assert_int_equal(example_pixel.dirtyBit, ptr->dirtyBit);
-}
+// void test_write_struct(void ** state){
+//     Node_t example_pixel = {
+//         .value = 80,
+//         .index = 0,
+//         .metadata_id = 1,
+//         .dirtyBit = false
+//     };
 
-void test_read_int(void ** state){
+//     Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(Node_t));
 
-    int valueToWrite = 1;
+//     Node_t *ptr = (Node_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
 
-    int *shm_ptr = obtain_shared_pointer(sizeof(int), shared_fd);
+//     assert_int_equal(example_pixel.value, ptr->value);
+//     assert_int_equal(example_pixel.dirtyBit, ptr->dirtyBit);
+//     close_shm_ptr(shm_ptr);
+// }
 
-    write_shared_memory(shm_ptr, &valueToWrite, sizeof(int));
-    int *read_ptr = malloc(sizeof(int));
-    read_shared_memory(read_ptr, shm_ptr, sizeof(int));
+// void test_read_int(void ** state){
 
-    assert_true(read_ptr!= NULL);
-    assert_int_equal(*read_ptr, valueToWrite);
+//     int valueToWrite = 1;
 
-    free(read_ptr);
-    close_shared_pointer(shm_ptr, sizeof(int));
-}
+//     int *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(int));
 
-void test_read_struct(void ** state){
-    Node_t example_pixel = {
-        .value = 80,
-        .index = 0,
-        .metadata_id = 1,
-        .dirtyBit = false
-    };
+//     write_shared_memory(shm_ptr, &valueToWrite, sizeof(int));
+//     int *read_ptr = malloc(sizeof(int));
+//     read_shared_memory(read_ptr, shm_ptr, sizeof(int));
 
-    Node_t *shm_ptr = obtain_shared_pointer(sizeof(Node_t), shared_fd);
+//     assert_true(read_ptr!= NULL);
+//     assert_int_equal(*read_ptr, valueToWrite);
 
-    Node_t *ptr = (Node_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
+//     free(read_ptr);
+//     close_shm_ptr(shm_ptr);
+// }
+
+// void test_read_struct(void ** state){
+//     Node_t example_pixel = {
+//         .value = 80,
+//         .index = 0,
+//         .metadata_id = 1,
+//         .dirtyBit = false
+//     };
+
+//     Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(Node_t));
+
+//     Node_t *ptr = (Node_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
     
-    Node_t *read_ptr = malloc(sizeof(Node_t));
-    read_shared_memory(read_ptr, shm_ptr, sizeof(Node_t));
+//     Node_t *read_ptr = malloc(sizeof(Node_t));
+//     read_shared_memory(read_ptr, shm_ptr, sizeof(Node_t));
 
-    assert_true(read_ptr!= NULL);
-    assert_int_equal(read_ptr->value, example_pixel.value);
-    assert_int_equal(read_ptr->dirtyBit, example_pixel.dirtyBit);
+//     assert_true(read_ptr!= NULL);
+//     assert_int_equal(read_ptr->value, example_pixel.value);
+//     assert_int_equal(read_ptr->dirtyBit, example_pixel.dirtyBit);
 
-    free(read_ptr);
-    close_shared_pointer(shm_ptr, sizeof(int));
-}
+//     free(read_ptr);
+//     close_shm_ptr(shm_ptr);
+// }
 
 int main(void) {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test_setup_teardown(test_no_error, setup_basic, teardown_test),
-        cmocka_unit_test_setup_teardown(test_write_int, setup_basic, teardown_test),
-        cmocka_unit_test_setup_teardown(test_write_struct, setup_basic, teardown_test),
-        cmocka_unit_test_setup_teardown(test_read_int, setup_basic, teardown_test),
+        // cmocka_unit_test(test_no_error),
+        // cmocka_unit_test(test_write_int),
+        // cmocka_unit_test(test_write_struct),
+        // cmocka_unit_test(test_read_int),
+        // cmocka_unit_test(test_read_struct),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
