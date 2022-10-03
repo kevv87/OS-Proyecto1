@@ -34,16 +34,21 @@ Node_t * determine_next_available_shm_ptr(void *ptr_to_shm_start, ImageChunk_t *
     return (Node_t *) avail_ptr;
 }
 
+ImageChunk_t * mapChunk(void * ptr_to_shm_start){
+
+}
+
 void append_item(void *ptr_to_shm_start, Node_t *nodeToAppend){
     
     ImageChunk_t *chunk = (ImageChunk_t *) ptr_to_shm_start;
 
     Node_t* newNode = 
         determine_next_available_shm_ptr(ptr_to_shm_start, chunk);
+    printf("Puntero es:%d\n", newNode);
     
     nodeToAppend->index = chunk->size;
 
-    write_shared_memory(newNode, nodeToAppend, sizeof(Node_t));
+    //write_shared_memory(newNode, nodeToAppend, sizeof(Node_t));
 
 	if(chunk->size == 0){
 		chunk->head = newNode;
@@ -57,6 +62,12 @@ void append_item(void *ptr_to_shm_start, Node_t *nodeToAppend){
 		tempNode->next = chunk->tail;
 		newNode->next = chunk->head;
 	}
+    newNode->value = nodeToAppend->value;
+    newNode->index = nodeToAppend->index;
+    strcpy(newNode->insertion_time, nodeToAppend->insertion_time);
+    newNode->metadata_id = nodeToAppend->metadata_id;
+    newNode->dirtyBit = nodeToAppend->dirtyBit;
+    newNode->px_position = nodeToAppend->px_position;
 
 	chunk->size++;
 

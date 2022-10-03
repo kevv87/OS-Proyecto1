@@ -12,7 +12,6 @@ int get_id(char * name, size_t size)
     int id = shmget(key, size, 0664 | IPC_CREAT | IPC_EXCL);
     if(id!=-1)
     {
-        id = shmget(key, size, 0664 | IPC_CREAT);
         if(strcmp(name,CHUNK_LIST_PATH) == 0)
         {
             int pixel_quantity = (size-sizeof(ImageChunk_t))/sizeof(Node_t);
@@ -60,6 +59,8 @@ int get_id(char * name, size_t size)
 
 
         }
+    }else{
+        id = shmget(key, size, 0664 | IPC_CREAT);
     }
 
     return id;

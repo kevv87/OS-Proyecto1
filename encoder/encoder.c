@@ -180,6 +180,9 @@ int main()
         int px_position = 0;
         for(unsigned char *px_iter=img_data->img_ptr; px_iter!=(img_data->img_ptr + img_data->img_size); px_iter+=img_data->color_channels)
         {
+            if(execution_mode){
+                getchar();
+            }
             int hex_px = format_hex_px(*px_iter, *(px_iter+sizeof(unsigned char)), *(px_iter+2*sizeof(unsigned char)));
             Node_t *node = generate_descriptor(encrypt_pixel(hex_px, *encryption_key), 7);
 
@@ -187,9 +190,9 @@ int main()
             sem_down(statistic_sh_ptr, &(chunk_sh_ptr->sem_encoders));
 
             ///Acces shared chunk
-            Node_t * node_i = chunk_sh_ptr->head;
+            Node_t * node_i = chunk_sh_ptr + 1;
             while(node_i->dirtyBit){
-                node_i = node_i->next;
+                node_i += 1;
             }
 
             insert_descriptor(node, node_i->index);
