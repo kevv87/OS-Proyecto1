@@ -4,7 +4,6 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
-/*/
 int obtain_shared_fd(char *name, bool createIfNull, int len){
 	int shared_fd;
 
@@ -27,24 +26,6 @@ int obtain_shared_fd(char *name, bool createIfNull, int len){
 
 	return shared_fd;
 }
- */
-///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-static int get_id(char* block_name, int block_size)
-{
-    key_t key = ftok(block_name, 0);//Devuelve una llave basada en un path (BLOCK_NAME) y un id (en este caso 0) para hacer llamadas a RAM. Siempre que el par de datos sea el mismo devuelve lo mismo
-    int id = shmget(key, block_size, 0666 | IPC_CREAT);//Share memory get devuleve el id asociado a una key_t
-    printf("BLOCK_NAME: %s\n", block_name);
-    printf("Key: %d\n", key);
-    printf("id: %d\n", id);
-    return id;
-}
-shared_struct* locate_shared_memory_block(char* block_name, int block_size)
-{
-    int id = get_id(block_name, block_size);
-    shared_struct* res = (shared_struct*) shmat(id, NULL, 0);//Mapea la memoria compartida a un espacio en memoria
-    return res;
-}
-///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 void *obtain_shared_pointer(size_t size, int shared_fd){
 	void *ptr = mmap(NULL, size, PROT_WRITE, MAP_SHARED, shared_fd, 0);

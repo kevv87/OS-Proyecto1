@@ -3,7 +3,8 @@
 
 #include <stdbool.h>
 #include <semaphore.h>
-#include "constants.h"
+
+#define MAX_METADATA_NODES 15
 
 //Chunk
 typedef struct Node Node_t;
@@ -23,21 +24,49 @@ typedef struct ImageChunk
     sem_t sem_encoders;
 } ImageChunk_t;
 
-
-//Metadata
-typedef struct MetadataEntry
-{
+// Metadata
+typedef struct Metadata_Node {
     int total_pixeles;
-    int width, height;
+    int width;
+    int height;
     int has_decoder;
+    // int index // indice que comparte el encoder y el decoder
     sem_t image_semaphore;
-} MetadataEntry_t;
+} Metadata_Node_t;
 
-typedef struct
-{
-    MetadataEntry_t metadata_array[MAX_METADATA_NODES];
+typedef struct Metadata_Table {
+    Metadata_Node metadata_array[MAX_METADATA_NODES];
     sem_t sem_metadata;
-}shared_struct_metadata;
+} Metadata_Table_t;
+
+// Statistic
+typedef struct {
+    int total_used_memory;
+    double total_semaphore_waited_time;
+    int total_data_transfered;
+    double total_kernel_time;
+    int total_pixels_175;
+    int total_instances;
+    int chunk_size;
+    int metadata_size;
+    int statistics_size;
+    sem_t semaphore_visualizer;
+} Statistic_t;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // encoder
 struct Descriptor
