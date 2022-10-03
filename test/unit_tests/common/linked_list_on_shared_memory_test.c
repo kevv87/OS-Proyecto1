@@ -61,6 +61,7 @@ int teardown(void **state){
         perror("close_shm_ptr failed");
         return -1;
     }
+    free(ptr_to_shm_start);
     return 0;
 }
 
