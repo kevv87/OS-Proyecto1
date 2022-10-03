@@ -9,117 +9,117 @@
 #include "common/include/shared_memory.h"
 #include "common/include/types.h"
 
-#define SHM_NAME "/shm1"
+// #define SHM_NAME "/shm1"
 
-int shared_fd;
+// int shared_fd;
 
-// ****************************************************************
-// Setup
+// // ****************************************************************
+// // Setup
 
-// int setup_basic( void ** state){
-//     shared_fd = obtain_shared_fd("test", true, 4096);
-//     if (shared_fd == -1)
+// // int setup_basic( void ** state){
+// //     shared_fd = obtain_shared_fd("test", true, 4096);
+// //     if (shared_fd == -1)
+// //         return -1;
+// //     return 0;
+// // }
+
+// int teardown_test(void ** state){
+//     if(close_shared_memory("test") == -1)
 //         return -1;
+
 //     return 0;
 // }
 
-int teardown_test(void ** state){
-    if(close_shared_memory("test") == -1)
-        return -1;
+// // ****************************************************************
+// // Tests
 
-    return 0;
-}
+// void test_no_error(void ** state){
+//     int toWrite = 1;
 
-// ****************************************************************
-// Tests
+//     Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(int));
 
-void test_no_error(void ** state){
-    int toWrite = 1;
+//     assert_true(shm_ptr != NULL);
 
-    Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(int));
+// 	int *ptr = write_shared_memory(shm_ptr, &toWrite, sizeof(int));
 
-    assert_true(shm_ptr != NULL);
+// 	assert_true(ptr!=NULL);
+//     close_shm_ptr(shm_ptr);
+// }
 
-	int *ptr = write_shared_memory(shm_ptr, &toWrite, sizeof(int));
+// void test_write_int(void ** state){
+//     int toWrite = 1;
+//     Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(int));
 
-	assert_true(ptr!=NULL);
-    close_shm_ptr(shm_ptr);
-}
+// 	int *ptr = (int *) write_shared_memory(shm_ptr, &toWrite, sizeof(int));
 
-void test_write_int(void ** state){
-    int toWrite = 1;
-    Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(int));
+//     assert_int_equal(1, *ptr);
+//     close_shm_ptr(shm_ptr);
+// }
 
-	int *ptr = (int *) write_shared_memory(shm_ptr, &toWrite, sizeof(int));
+// void test_write_struct(void ** state){
+//     Node_t example_pixel = {
+//         .value = 80,
+//         .index = 0,
+//         .metadata_id = 1,
+//         .dirtyBit = false
+//     };
 
-    assert_int_equal(1, *ptr);
-    close_shm_ptr(shm_ptr);
-}
+//     Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(Node_t));
 
-void test_write_struct(void ** state){
-    Node_t example_pixel = {
-        .value = 80,
-        .index = 0,
-        .metadata_id = 1,
-        .dirtyBit = false
-    };
+//     Node_t *ptr = (Node_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
 
-    Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(Node_t));
+//     assert_int_equal(example_pixel.value, ptr->value);
+//     assert_int_equal(example_pixel.dirtyBit, ptr->dirtyBit);
+//     close_shm_ptr(shm_ptr);
+// }
 
-    Node_t *ptr = (Node_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
+// void test_read_int(void ** state){
 
-    assert_int_equal(example_pixel.value, ptr->value);
-    assert_int_equal(example_pixel.dirtyBit, ptr->dirtyBit);
-    close_shm_ptr(shm_ptr);
-}
+//     int valueToWrite = 1;
 
-void test_read_int(void ** state){
+//     int *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(int));
 
-    int valueToWrite = 1;
+//     write_shared_memory(shm_ptr, &valueToWrite, sizeof(int));
+//     int *read_ptr = malloc(sizeof(int));
+//     read_shared_memory(read_ptr, shm_ptr, sizeof(int));
 
-    int *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(int));
+//     assert_true(read_ptr!= NULL);
+//     assert_int_equal(*read_ptr, valueToWrite);
 
-    write_shared_memory(shm_ptr, &valueToWrite, sizeof(int));
-    int *read_ptr = malloc(sizeof(int));
-    read_shared_memory(read_ptr, shm_ptr, sizeof(int));
+//     free(read_ptr);
+//     close_shm_ptr(shm_ptr);
+// }
 
-    assert_true(read_ptr!= NULL);
-    assert_int_equal(*read_ptr, valueToWrite);
+// void test_read_struct(void ** state){
+//     Node_t example_pixel = {
+//         .value = 80,
+//         .index = 0,
+//         .metadata_id = 1,
+//         .dirtyBit = false
+//     };
 
-    free(read_ptr);
-    close_shm_ptr(shm_ptr);
-}
+//     Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(Node_t));
 
-void test_read_struct(void ** state){
-    Node_t example_pixel = {
-        .value = 80,
-        .index = 0,
-        .metadata_id = 1,
-        .dirtyBit = false
-    };
-
-    Node_t *shm_ptr = obtain_shm_pointer(SHM_NAME, sizeof(Node_t));
-
-    Node_t *ptr = (Node_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
+//     Node_t *ptr = (Node_t *) write_shared_memory(shm_ptr, &example_pixel, sizeof(example_pixel));
     
-    Node_t *read_ptr = malloc(sizeof(Node_t));
-    read_shared_memory(read_ptr, shm_ptr, sizeof(Node_t));
+//     Node_t *read_ptr = malloc(sizeof(Node_t));
+//     read_shared_memory(read_ptr, shm_ptr, sizeof(Node_t));
 
-    assert_true(read_ptr!= NULL);
-    assert_int_equal(read_ptr->value, example_pixel.value);
-    assert_int_equal(read_ptr->dirtyBit, example_pixel.dirtyBit);
+//     assert_true(read_ptr!= NULL);
+//     assert_int_equal(read_ptr->value, example_pixel.value);
+//     assert_int_equal(read_ptr->dirtyBit, example_pixel.dirtyBit);
 
-    free(read_ptr);
-    close_shm_ptr(shm_ptr);
-}
+//     free(read_ptr);
+//     close_shm_ptr(shm_ptr);
+// }
 
 int main(void) {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_no_error),
-        cmocka_unit_test(test_write_int),
-        cmocka_unit_test(test_write_struct),
-        cmocka_unit_test(test_read_int),
-        cmocka_unit_test(test_read_struct),
+        // cmocka_unit_test(test_no_error),
+        // cmocka_unit_test(test_write_int),
+        // cmocka_unit_test(test_write_struct),
+        // cmocka_unit_test(test_read_int),
+        // cmocka_unit_test(test_read_struct),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
