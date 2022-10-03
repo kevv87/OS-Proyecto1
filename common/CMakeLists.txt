@@ -1,5 +1,10 @@
-set(SOURCES helloWorld.c imageChunk.c)
-set(HEADERS include/helloWorld.h include/imageChunk.h)
+set(SOURCES helloWorld.c imageChunk.c shared_memory.c)
+set(HEADERS include/helloWorld.h include/imageChunk.h include/shared_memory.h)
 
-add_library(Common ${SOURCES} ${HEADERS})
-target_include_directories(Common PUBLIC "./")
+set(LIBRARY_NAME Common)
+
+add_library(${LIBRARY_NAME} ${SOURCES} ${HEADERS})
+target_include_directories(${LIBRARY_NAME} PUBLIC "./")
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+    target_link_libraries(${LIBRARY_NAME} PUBLIC rt)
+endif()
