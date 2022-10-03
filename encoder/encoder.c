@@ -5,6 +5,12 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <semaphore.h>
+#include "common/include/imageChunk.h"
+#include "common/include/shared_memory.h"
+
+
+#define SHM_CHUNK "/shm_chunk"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image/stb_image.h"
@@ -12,7 +18,16 @@
 #define KB 1024
 #define INPUT_LIMIT 1*KB
 
-struct Descriptor {
+
+//todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//Borrar! (eventualmente)
+//todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+int id=1;
+//todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+struct Descriptor
+{
     uint16_t encrypted_px;
     int struct_index;
     int px_position;
@@ -21,13 +36,15 @@ struct Descriptor {
 };
 struct Descriptor desc_array[2500];
 
-struct ImgData {
+struct ImgData
+{
     int width, height, color_channels;
     unsigned char *img_ptr;
     size_t img_size;
 };
 
-void read_image(char *file_name, struct ImgData *img_data) {
+void read_image(char *file_name, struct ImgData *img_data)
+{
 	printf("Opening image file: %s...\n", file_name);
     img_data->img_ptr = stbi_load(file_name, &img_data->width, &img_data->height, &img_data->color_channels, 0);
 	if(img_data->img_ptr != NULL){
@@ -58,6 +75,13 @@ int encrypt_pixel(int pixel, int key) {
     return pixel;
 }
 
+int format_hex_px(int red, int green, int blue)
+{
+    printf("%d, %d, %d\n", red, green, blue);
+    int hex_px = (red << 16) + (green << 8) + blue;
+    return hex_px;
+}
+
 char * get_time() {
     time_t current_time;
     struct tm * time_info;
@@ -79,7 +103,8 @@ struct Descriptor * generate_descriptor(uint16_t encrypted_px, int px_position) 
     return desc;
 }
 
-void insert_descriptor(struct Descriptor *desc, int pos) {
+void insert_descriptor(struct Descriptor *desc, int pos)
+{
     desc->struct_index = pos;
     char * time_str = get_time();
     strncpy(desc->insertion_time, time_str, 9);
@@ -89,7 +114,9 @@ void insert_descriptor(struct Descriptor *desc, int pos) {
     desc->encrypted_px, desc->struct_index, desc->px_position, desc->insertion_time, desc->is_read);
 }
 
-int main() {
+
+int main()
+{
     // Setting configuration
     char *image_path = malloc(sizeof(char)*INPUT_LIMIT);
     int *pixel_quantity = malloc(sizeof(int));
@@ -97,29 +124,100 @@ int main() {
     int *encryption_key = malloc(sizeof(int));
     get_encoder_params(image_path, pixel_quantity, execution_mode, encryption_key);
 
+
+    //Creates ptr to shared memory
+    //open shared memory
+    int shm_size = sizeof(ImageChunk_t) + *pixel_quantity * sizeof(Node_t);
+    int fd = obtain_shared_fd(SHM_CHUNK, true, shm_size);
+    void * ptr_to_shm_start = obtain_shared_pointer(shm_size, fd);
+
+    ImageChunk_t * chunk = (ImageChunk_t*) ptr_to_shm_start;
+    if(chunk == NULL)
+    {
+        //Crea el chunk
+        create_image_chunk(ptr_to_shm_start, *pixel_quantity);
+        //sem_init(&(chunk->sem_encoders), 1, *pixel_quantity);
+        sem_init(&(chunk->sem_encoders), 1, 10);
+
+        sem_post(&(chunk->sem_encoders));
+        sem_post(&(chunk->sem_encoders));
+        sem_post(&(chunk->sem_encoders));
+        sem_post(&(chunk->sem_encoders));
+        sem_post(&(chunk->sem_encoders));
+
+
+        //todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //Crea tabla de metadatos
+
+
+        //todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //Crea estadisticas
+    }
+
+
     struct ImgData *img_data = malloc(sizeof(struct ImgData));
     read_image(image_path, img_data);
-    if (img_data != NULL) {
-        uint8_t is_run = 1;
+    if (img_data != NULL)
+    {
         int pos_counter = 0;
 
-        for (unsigned char *px_iter=img_data->img_ptr; px_iter!=(img_data->img_ptr + img_data->img_size); px_iter+=img_data->color_channels) {
-            struct Descriptor *desc = generate_descriptor(encrypt_pixel(*px_iter, *encryption_key), pos_counter);
-            if (is_run == 1) {
-                insert_descriptor(desc, pos_counter);
+        for(unsigned char *px_iter=img_data->img_ptr; px_iter!=(img_data->img_ptr + img_data->img_size); px_iter+=img_data->color_channels)
+        {
+            int hex_px = format_hex_px(*px_iter, *(px_iter+sizeof(unsigned char)), *(px_iter+2*sizeof(unsigned char)));
+            struct Descriptor *desc = generate_descriptor(encrypt_pixel(hex_px, *encryption_key), pos_counter);
+
+
+            //int sem_value=100;
+            //sem_getvalue(&(chunk->sem_encoders), &sem_value);
+            //printf("Sem encoders value: %d\n", sem_value);
+
+
+            //Encoders semaphore down
+            //sem_wait(&(chunk->sem_encoders));
+            //     /home/majinloop/Git/OS-Proyecto1/encoder/bw50.jpg
+
+
+            //Acces shared chunk
+            for(int i=0; i<chunk->size; i++)
+            {
+                Node_t * current_node = malloc(sizeof(Node_t));
+                if(!get_pixel_by_index(chunk, i)->dirtyBit)
+                {
+                    insert_descriptor(desc, pos_counter);
+
+                    //Valores del nodo
+                    current_node->dirtyBit=true;
+
+                    current_node->metadata_id=id;
+                    current_node->value=desc->encrypted_px;
+                    current_node->index=0;//Se le cae encima no se toca
+                    current_node->next=NULL;
+
+
+                    replace_nth_pixel(chunk, current_node, i);
+                    //todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    //Up decoder-pair semaphore
+                    //Recorrer metadata buscando el id
+                    //sem_post(&(help));
+                }
             }
-            else {
-                sleep(0.7);
-                px_iter -= img_data->color_channels;
-                pos_counter -= 1;
-            }
-            pos_counter += 1;
-            is_run = -1*is_run;
-        }
+        }//Aca termina la pasacion de pixeles
+
+
+
     }
+
+
+    //Close shared memory
+    close_shared_pointer(ptr_to_shm_start, shm_size);
+    close_shared_memory(SHM_CHUNK);
+
+
     free(image_path);
     free(pixel_quantity);
     free(execution_mode);
     free(encryption_key);
     free(img_data);
 }
+
+
