@@ -11,6 +11,7 @@
 
 #define SHM_1_NAME "/test1"
 
+
 ImageChunk_t *imageChunk;
 int shm_size;
 int shmid;
@@ -19,10 +20,10 @@ void * ptr_to_shm_start;
 // -----> Auxiliary functions
 
 int setup_empty_list(void ** state){
-    shm_size = sizeof(ImageChunk_t);
+    shm_size = sizeof(ImageChunk_t)+sizeof(Node_t);
 
     shmid = get_id(SHM_1_NAME, shm_size);
-    ptr_to_shm_start = malloc(sizeof(shm_size));
+    ptr_to_shm_start = malloc(shm_size);
 
     obtain_shm_pointer(shmid, ptr_to_shm_start);
     if(ptr_to_shm_start == NULL){
@@ -38,7 +39,7 @@ int setup_empty_list(void ** state){
 
 int setup_populated_list(void ** state){
     int node_quantity = 10;
-    shm_size = sizeof(ImageChunk_t) + node_quantity * sizeof(Node_t);
+    shm_size = sizeof(ImageChunk_t) + (node_quantity+1) * sizeof(Node_t);
     shmid = get_id(SHM_1_NAME, shm_size);
 
     ptr_to_shm_start = malloc(shm_size);
@@ -57,11 +58,11 @@ int setup_populated_list(void ** state){
 }
 
 int teardown(void **state){
+    free(ptr_to_shm_start);
     if(close_shm_ptr(shmid, ptr_to_shm_start)){
         perror("close_shm_ptr failed");
         return -1;
     }
-    free(ptr_to_shm_start);
     return 0;
 }
 
@@ -74,7 +75,7 @@ Node_t * get_shm_ptr_by_node_index(void *shm_ptr_to_start, int index){
 // ------> Tests 
 static void create_list(void **state){
     // Setup
-    size_t shm_size = sizeof(ImageChunk_t);
+    size_t shm_size = sizeof(ImageChunk_t)+sizeof(Node_t);
     int shmid = get_id(SHM_1_NAME, shm_size);
 
     void * ptr_to_shm_start = malloc(shm_size);
@@ -91,6 +92,7 @@ static void create_list(void **state){
     assert_int_equal(imageChunk->size, 0);
 
     // Close
+    free(ptr_to_shm_start);
     close_shm_ptr(shmid, ptr_to_shm_start);
 }
 
@@ -242,7 +244,7 @@ static void test_add_several_items(void **state){
 static void test_generate_fixed_length_chunk(void **state){
     // Setup
     int node_quantity = 10;
-    int shm_size = sizeof(ImageChunk_t) + node_quantity * sizeof(Node_t);
+    int shm_size = sizeof(ImageChunk_t) + (1+node_quantity) * sizeof(Node_t);
     int shmid = get_id(SHM_1_NAME, shm_size);
 
     void * ptr_to_shm_start = malloc(shm_size);
