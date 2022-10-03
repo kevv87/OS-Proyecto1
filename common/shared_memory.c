@@ -32,6 +32,29 @@ void *obtain_shared_pointer(size_t size, int shared_fd){
 	return ptr;
 }
 
+int get_id(char * name, size_t size){
+    key_t key = ftok(name, 0);
+    return shmget(key, size, 0664 | IPC_CREAT);
+}
+
+void *obtain_shm_pointer(char * name, size_t size){
+    int id = get_id(name, size);
+    void * shm_ptr = shmat(id, NULL, 0);
+    if(shm_ptr==NULL){
+        perror("shmat failed");
+        return NULL;
+    }
+    return shm_ptr;
+}
+
+int close_shm_ptr(void * shm_ptr){
+    if(shmdt(shm_ptr) == -1){
+        perror("shmdt failed");
+        return -1;
+    }
+    return 0;
+}
+
 int close_shared_pointer(void *mmap_ptr, int size){
 	int errno = munmap(mmap_ptr, size);
 
