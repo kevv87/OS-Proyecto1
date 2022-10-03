@@ -59,7 +59,6 @@ int encrypt_pixel(int pixel, int key) {
 }
 
 int format_hex_px(int red, int green, int blue) {
-    printf("%d, %d, %d\n", red, green, blue);
     int hex_px = (red << 16) + (green << 8) + blue;
     return hex_px;
 }
@@ -89,7 +88,6 @@ void insert_descriptor(struct Descriptor *desc, int pos) {
     desc->struct_index = pos;
     char * time_str = get_time();
     strncpy(desc->insertion_time, time_str, 9);
-    //(desc_array+(pos*sizeof(desc))) = desc;
     desc_array[pos] = *desc;
     printf("Encrypted px: %x, Structure index: %d, Px position in file: %d, Insertion time: %s, Is read: %d\n",
     desc->encrypted_px, desc->struct_index, desc->px_position, desc->insertion_time, desc->is_read);
