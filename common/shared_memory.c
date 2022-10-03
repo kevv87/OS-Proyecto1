@@ -6,6 +6,18 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+int close_shm_ptr(int shmid, void * shm_ptr){
+    // if(shmdt(shm_ptr) == -1){
+    //     perror("shmdt failed");
+    //     return -1;
+    // }
+    if(shmctl(shmid, IPC_RMID, NULL) == -1){
+        perror("shmctl failed");
+        return -1;
+    }
+    return 0;
+}
+
 int get_id(char * name, size_t size)
 {
     key_t key = ftok(name, 0);
